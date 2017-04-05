@@ -1,0 +1,2 @@
+# KnownMastodon
+Syndicate to Mastodon

@@ -42,7 +42,26 @@
                         }
                     }
                 });
-                
+                function connect($username = false)
+            {
+                require_once(dirname(__FILE__) . '/external/PHPMastodon.php');
+                if (!empty(\Idno\Core\Idno::site()->config()->mastodon)) {
+                    $params = array(
+                        'consumer_key'    => \Idno\Core\Idno::site()->config()->mastodon['consumer_key'],
+                        'consumer_secret' => \Idno\Core\Idno::site()->config()->mastodon['consumer_secret'],
+                    );
+                    if (!empty($username) && !empty(\Idno\Core\Idno::site()->session()->currentUser()->mastodon[$username])) {
+                        $params = array_merge($params, \Idno\Core\Idno::site()->session()->currentUser()->mastodon[$username]);
+                    } else if (!empty(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['user_token']) && ($username == \Idno\Core\Idno::site()->session()->currentUser()->mastodon['screen_name'] || empty($username))) {
+                        $params['user_token'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['user_token'];
+                        $params['user_secret'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['user_secret'];
+                        $params['screen_name'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['screen_name'];
+                    }
+                    return new \mastodon($params);
+                }
+                return false;
+            }
+
                 
                   /**
              * Can the current user use Mastodon?

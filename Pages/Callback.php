@@ -15,7 +15,7 @@
             function get($params = array())
             {
                 $this->gatekeeper(); // Logged-in users only
-                if ($token = $this->getInput('oauth_token')) {
+                if ($token = $this->getInput('access_token')) {
                     if ($mastodon = \Idno\Core\site()->plugins()->get('Mastodon')) {
                         $mastodonAPI = $mastodon->connect();
                         $mastodonAPI->config['user_token'] = \idno\Core\site()->session()->get('oauth')['oauth_token'];

@@ -30,14 +30,20 @@
 			$u = $this->oauth_url . 'authorize?response_type=code';
 			$c = '&client_id=' . urlencode($this->client_id);
 			$r = '&redirect_uri=' . urlencode($this->redirect_url);
-			$s = '&scope=' . urlencode('activity location'); # Assuming we want both activity and locations
+			$s = '&scope=' . urlencode(''); #
 			$url = $u . $c . $s . $r;
 			return $url;
 		}
-		
-		private function register_application($app_name){
+                
+                
+		/**
+                 * returns id, client_id, client_secret
+                 * @param type $app_name
+                 * @return array
+                 */
+		public function register_application($app_name){
 			$endpoint = '/apps';
-			return $this->get(array('response_type' => 'code', 'client_name' => $app_name, 'redirect_uri' => $this->redirect_url), $endpoint);
+			return $this->post(array('scopes' => 'write', 'client_name' => $app_name, 'redirect_uris' => $this->redirect_url), $endpoint);
 		}
 
 		#Validate access token

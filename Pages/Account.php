@@ -32,6 +32,24 @@
                     $user->save();
                     \Idno\Core\site()->session()->addMessage('Your Mastodon settings have been removed from your account.');
                 }
+                if ($this->getInput('login') && $this->getInput('username')) {
+                    $user = \Idno\Core\site()->session()->currentUser();
+                    $tmp = explode('@', $this->getInput('username'));
+                    $login = $this->getInput('login');
+                    $username = $this->getInput('username');
+                    $server = $tmp[1];
+                    $user->mastodon = array('server' => $server, 'login' => $login, 'username' => $username, 'bearer' => '');
+                    if (empty(Idno::site()->config()->mastodon->servers[$server])){
+                        $mastodon = \Idno\Core\site()->plugins()->get('Mastodon');
+                        $mastodonApi = $mastodon->connect($server);
+                        $appConfig = $mastodonApi->createApp($server);
+                        $authUrl = $mastodonApi->getAuthUrl();
+                        $knownuser = \Idno\Core\site()->session()->currentUser()->getHandle();
+                        \Idno\Core\site()->config->config['mastodon'] = [
+                    'servers' => [$server =>['name' => $server, 'user' => $knownuser, 'issued_ad' => now, 'client_id' => '', 'client_secret' => ''] ]
+                ];
+                    }
+                }
                 $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'account/mastodon/');
             }
 

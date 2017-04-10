@@ -35,10 +35,11 @@ class Mastodon
     /**
      * Construct new Mastodon class
      */
-    public function __construct($domainname = "mastodon.social") {        
+    public function __construct($callback, $domainname = "mastodon.social") {        
         
         //Set the domain name to use
         $this->setMastodonDomain($domainname);
+        $this->setRedirectUris($callback);
     }
     
     /**

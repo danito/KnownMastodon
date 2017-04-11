@@ -113,7 +113,7 @@ namespace IdnoPlugins\Mastodon {
 
         function connect($server = false) {
            // require_once(dirname(__FILE__) . '/autoload.php');
-            require_once(dirname(__FILE__) . '/external/theCodingCompagnie/Mastodon.php');
+            require_once(dirname(__FILE__) . '/external/theCodingCompagny/Mastodon.php');
             if (!empty(\Idno\Core\Idno::site()->config()->mastodon)) {
                 $callback = \Idno\Core\Idno::site()->config()->getDisplayURL() . "mastodon/callback/";
                 if (empty($server) && isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {

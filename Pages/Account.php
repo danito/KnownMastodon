@@ -37,8 +37,9 @@ namespace IdnoPlugins\Mastodon\Pages {
                 $server = $tmp[1];
                 $user->mastodon = array('server' => $server, 'login' => $login, 'username' => $tmp[0], 'bearer' => '');
                 $user->save();
-                \Idno\Core\Idno::site()->logging()->log("Mastodon debug : Account server: ".$server);
+                \Idno\Core\Idno::site()->logging()->log("Mastodon debug : Account server: " . $server);
                 if (empty(\Idno\Core\Idno::site()->config()->mastodon[$server])) {
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon debug : config empty for server: " . $server);
                     $mastodon = \Idno\Core\site()->plugins()->get('Mastodon');
                     $mastodonApi = $mastodon->connect($server);
                     $appConfig = $mastodonApi->createApp($server);
@@ -47,15 +48,19 @@ namespace IdnoPlugins\Mastodon\Pages {
                     $clientSecret = $appConfig['client_secret'];
                     $knownuser = \Idno\Core\site()->session()->currentUser()->getHandle();
                     $serverConfig = array('name' => $server,
-                                            'user' => $knownuser,
-                                            'issued_at' => now,
-                                            'client_id' => $clientID,
-                                            'client_secret' => $clientSecret,
-                                            'auth_url' => $authUrl);
-                    
+                        'user' => $knownuser,
+                        'issued_at' => now,
+                        'client_id' => $clientID,
+                        'client_secret' => $clientSecret,
+                        'auth_url' => $authUrl);
+
                     \Idno\Core\site()->config->config['mastodon'][$server] = array($serverConfig);
                     \Idno\Core\site()->config->save();
+                } else {
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon debug : config  not empty: ");
                 }
+            } else {
+                \Idno\Core\Idno::site()->logging()->log("Mastodon debug : account no input : " );
             }
             $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'account/mastodon/');
         }

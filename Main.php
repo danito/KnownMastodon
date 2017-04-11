@@ -119,6 +119,7 @@ namespace IdnoPlugins\Mastodon {
                 if (empty($server) && isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {
                     $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
                 } else {
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon DEBUG: connect empty server, server not set in account");
                     return false;
                 }
 

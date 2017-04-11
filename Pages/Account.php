@@ -39,6 +39,10 @@ namespace IdnoPlugins\Mastodon\Pages {
                 $user->mastodon = array('server' => $server, 'login' => $login, 'username' => $tmp[0], 'bearer' => '');
                 $user->save();
                 \Idno\Core\Idno::site()->logging()->log("Mastodon debug : Account server: " . $server);
+                if (empty(\Idno\Core\Idno::site()->config()->mastodon)) {
+                    \Idno\Core\Idno::site()->config()->mastodon = array('mastodon' => true);
+                    \Idno\Core\site()->config->save();
+                }
                 if (empty(\Idno\Core\Idno::site()->config()->mastodon[$server])) {
                     \Idno\Core\Idno::site()->logging()->log("Mastodon DEBUG :After save: config empty for server: " . $server);
                     $mastodon = \Idno\Core\site()->plugins()->get('Mastodon');

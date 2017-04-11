@@ -24,6 +24,8 @@ namespace IdnoPlugins\Mastodon {
 
         function registerEventHooks() {
             \Idno\Core\Idno::site()->syndication()->registerService('mastodon', function () {
+                                \Idno\Core\Idno::site()->logging()->log("Mastodon: registerService" );
+
                 return $this->hasMastodon();
             }, array('note', 'article', 'image', 'media', 'rsvp', 'bookmark', 'like', 'share'));
 

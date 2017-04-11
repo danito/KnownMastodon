@@ -113,14 +113,14 @@ namespace IdnoPlugins\Mastodon {
 
         function connect($server = false) {
             require_once(dirname(__FILE__) . '/autoload.php');
-            require_once(dirname(__FILE__) . '/external/PHPMastodon.php');
+           // require_once(dirname(__FILE__) . '/external/PHPMastodon.php');
             if (!empty(\Idno\Core\Idno::site()->config()->mastodon)) {
                 $callback = \Idno\Core\Idno::site()->config()->getDisplayURL() . "mastodon/callback/";
                 if (empty($server) && isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {
                     $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
                 } 
 
-                return new \theCodingCompany\Mastodon($callback, $server);
+                return new external\theCodingCompany\Mastodon($callback, $server);
             }
             \Idno\Core\Idno::site()->logging()->log("Mastodon DEBUG: config empty");
             return false;

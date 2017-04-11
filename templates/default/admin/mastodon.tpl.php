@@ -14,11 +14,11 @@
 <div class="row">
     <div class="col-md-10 col-md-offset-1">
         <?php
-        if (!empty(\Idno\Core\site()->config()->mastodon['servers'])) {
+        if (!empty(\Idno\Core\site()->config()->mastodon)) {
             ?>
             <p> Following Mastodon servers are configured: </p>
             <?php
-            $servers = \Idno\Core\site()->config()->mastodon['servers'];
+            $servers = \Idno\Core\site()->config()->mastodon;
             foreach ($servers as $servername => $details) {
                 ?>
                 <div class="panel panel-default">

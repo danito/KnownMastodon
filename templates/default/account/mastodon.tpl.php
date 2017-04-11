@@ -26,7 +26,7 @@ $user = Idno::site()->session()->currentUser();
     } elseif (!empty($user->mastodon['username']) && empty($user->mastodon['bearer'])) {
         $account = $user->mastodon;
         $server = $account['server'];
-        $authUrl = Idno::site()->config()->mastodon->servers[$server]['auth_url'];
+        $authUrl = Idno::site()->config()->mastodon[$server]['auth_url'];
         ?>
         <p>Authorize with <?= $server?></p>
         <form class="form-horizontal" method="post">

@@ -124,6 +124,7 @@ namespace IdnoPlugins\Mastodon {
 
                 return new \theCodingCompany\Mastodon($callback, $server);
             }
+            \Idno\Core\Idno::site()->logging()->log("Mastodon DEBUG: config empty");
             return false;
         }
 

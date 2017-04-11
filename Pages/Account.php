@@ -20,6 +20,7 @@ namespace IdnoPlugins\Mastodon\Pages {
             $t = \Idno\Core\site()->template();
             $body = $t->__(array('oauth_url' => $oauth_url))->draw('account/mastodon');
             $t->__(array('title' => 'Mastodon', 'body' => $body))->drawPage();
+            \Idno\Core\Idno::site()->logging()->log("Mastodon DEBUG : account page");
         }
 
         function postContent() {
@@ -39,7 +40,7 @@ namespace IdnoPlugins\Mastodon\Pages {
                 $user->save();
                 \Idno\Core\Idno::site()->logging()->log("Mastodon debug : Account server: " . $server);
                 if (empty(\Idno\Core\Idno::site()->config()->mastodon[$server])) {
-                    \Idno\Core\Idno::site()->logging()->log("Mastodon debug : config empty for server: " . $server);
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon DEBUG :After save: config empty for server: " . $server);
                     $mastodon = \Idno\Core\site()->plugins()->get('Mastodon');
                     $mastodonApi = $mastodon->connect($server);
                     $appConfig = $mastodonApi->createApp($server);

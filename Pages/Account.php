@@ -34,11 +34,11 @@ namespace IdnoPlugins\Mastodon\Pages {
                 $user = \Idno\Core\site()->session()->currentUser();
                 $tmp = explode('@', $this->getInput('username'));
                 $login = $this->getInput('login');
-                $username = $this->getInput('username');
                 $server = $tmp[1];
                 $user->mastodon = array('server' => $server, 'login' => $login, 'username' => $tmp[0], 'bearer' => '');
                 $user->save();
-                if (empty(Idno::site()->config()->mastodon[$server])) {
+                \Idno\Core\Idno::site()->logging()->log("Mastodon debug : Account server: ".$server);
+                if (empty(\Idno\Core\Idno::site()->config()->mastodon[$server])) {
                     $mastodon = \Idno\Core\site()->plugins()->get('Mastodon');
                     $mastodonApi = $mastodon->connect($server);
                     $appConfig = $mastodonApi->createApp($server);

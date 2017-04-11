@@ -28,6 +28,7 @@ namespace IdnoPlugins\Mastodon {
             }, array('note', 'article', 'image', 'media', 'rsvp', 'bookmark', 'like', 'share'));
 
             \Idno\Core\Idno::site()->addEventHook('user/auth/success', function (\Idno\Core\Event $event) {
+                \Idno\Core\Idno::site()->logging()->log("Mastodon: RegisterEventHook" );
                 if ($this->hasMastodon()) {
                     $mastodon = \Idno\Core\Idno::site()->session()->currentUser()->mastodon;
                     if (is_array($mastodon)) {

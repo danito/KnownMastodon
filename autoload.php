@@ -9,7 +9,7 @@
  * 
  */
 define('CLASS_DIR', __DIR__);
-set_include_path(get_include_path().PATH_SEPARATOR.CLASS_DIR);
+set_include_path(get_include_path().PATH_SEPARATOR.CLASS_DIR.PATH_SEPARATOR."external");
     
 spl_autoload_register(function($name){
     //For namespaces we replace \ with / to correct the Path

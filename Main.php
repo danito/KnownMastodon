@@ -24,13 +24,13 @@ namespace IdnoPlugins\Mastodon {
 
         function registerEventHooks() {
             \Idno\Core\Idno::site()->syndication()->registerService('mastodon', function () {
-                                \Idno\Core\Idno::site()->logging()->log("Mastodon: registerService" );
+                \Idno\Core\Idno::site()->logging()->log("Mastodon: registerService");
 
                 return $this->hasMastodon();
             }, array('note', 'article', 'image', 'media', 'rsvp', 'bookmark', 'like', 'share'));
 
             \Idno\Core\Idno::site()->addEventHook('user/auth/success', function (\Idno\Core\Event $event) {
-                \Idno\Core\Idno::site()->logging()->log("Mastodon: RegisterEventHook" );
+                \Idno\Core\Idno::site()->logging()->log("Mastodon: RegisterEventHook");
                 if ($this->hasMastodon()) {
                     $mastodon = \Idno\Core\Idno::site()->session()->currentUser()->mastodon;
                     if (is_array($mastodon)) {
@@ -86,82 +86,81 @@ namespace IdnoPlugins\Mastodon {
                     }
                 }
             });
+        }
 
-            function truncate($string, $length = 100, $append = "&hellip;") {
-                $string = trim($string);
+        function truncate($string, $length = 100, $append = "&hellip;") {
+            $string = trim($string);
 
-                if (strlen($string) > $length) {
-                    $string = wordwrap($string, $length);
-                    $string = explode("\n", $string, 2);
-                    $string = $string[0] . $append;
-                }
-
-                return $string;
+            if (strlen($string) > $length) {
+                $string = wordwrap($string, $length);
+                $string = explode("\n", $string, 2);
+                $string = $string[0] . $append;
             }
 
-            function getCredentials($server = false) {
-                if (empty($server)) {
+            return $string;
+        }
+
+        function getCredentials($server = false) {
+            if (empty($server)) {
+                $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
+            }
+            $credentials = array();
+            $credentials['client_id'] = \Idno\Core\Idno::site()->config()->mastodon[$server]['client_id'];
+            $credentials['client_secret'] = \Idno\Core\Idno::site()->config()->mastodon[$server]['client_secret'];
+            $credentials['bearer'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['bearer'];
+            return $credentials;
+        }
+
+        function connect($server = false) {
+            require_once(dirname(__FILE__) . '/autoload.php');
+            require_once(dirname(__FILE__) . '/external/PHPMastodon.php');
+            if (!empty(\Idno\Core\Idno::site()->config()->mastodon)) {
+                $callback = \Idno\Core\Idno::site()->config()->getDisplayURL() . "mastodon/callback/";
+                if (empty($server) && isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {
                     $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
-                }
-                $credentials = array();
-                $credentials['client_id'] = \Idno\Core\Idno::site()->config()->mastodon[$server]['client_id'];
-                $credentials['client_secret'] = \Idno\Core\Idno::site()->config()->mastodon[$server]['client_secret'];
-                $credentials['bearer'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['bearer'];
-                return $credentials;
-            }
-
-            function connect($server = false) {
-                require_once(dirname(__FILE__) . '/autoload.php');
-                require_once(dirname(__FILE__) . '/external/PHPMastodon.php');
-                if (!empty(\Idno\Core\Idno::site()->config()->mastodon)) {
-                    $callback = \Idno\Core\Idno::site()->config()->getDisplayURL() . "mastodon/callback/";
-                    if (empty($server) && isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {
-                        $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
-                    } else {
-                        return false;
-                    }
-
-                    return new \theCodingCompany\Mastodon($callback, $server);
-                }
-                return false;
-            }
-
-            /**
-             * 
-             */
-            function createApp($server = FALSE) {
-                $mastodon = $this;
-                $mastodonApi = $mastodon->connect($server);
-                $name = \Idno\Core\Idno::site()->config()->getTitle();
-                $website_url = \Idno\Core\Idno::site()->config()->getDisplayURL();
-                return $mastodonApi->createApp($name, $website_url);
-            }
-
-            /**
-             * Can the current user use Mastodon?
-             * @return bool
-             */
-            function hasMastodon() {
-                if (!\Idno\Core\Idno::site()->session()->currentUser()) {
+                } else {
                     return false;
                 }
-                if (!empty(\Idno\Core\Idno::site()->session()->currentUser()->mastodon)) {
-                    if (is_array(\Idno\Core\Idno::site()->session()->currentUser()->mastodon)) {
-                        $accounts = 0;
-                        foreach (\Idno\Core\Idno::site()->session()->currentUser()->mastodon as $server => $value) {
-                            if (!empty($server['bearer'])) {
-                                $accounts++;
-                            }
-                        }
-                        if ($accounts > 0) {
-                            return true;
-                        }
-                    }
-                    return true;
-                }
+
+                return new \theCodingCompany\Mastodon($callback, $server);
+            }
+            return false;
+        }
+
+        /**
+         * 
+         */
+        function createApp($server = FALSE) {
+            $mastodon = $this;
+            $mastodonApi = $mastodon->connect($server);
+            $name = \Idno\Core\Idno::site()->config()->getTitle();
+            $website_url = \Idno\Core\Idno::site()->config()->getDisplayURL();
+            return $mastodonApi->createApp($name, $website_url);
+        }
+
+        /**
+         * Can the current user use Mastodon?
+         * @return bool
+         */
+        function hasMastodon() {
+            if (!\Idno\Core\Idno::site()->session()->currentUser()) {
                 return false;
             }
-
+            if (!empty(\Idno\Core\Idno::site()->session()->currentUser()->mastodon)) {
+                if (is_array(\Idno\Core\Idno::site()->session()->currentUser()->mastodon)) {
+                    $accounts = 0;
+                    foreach (\Idno\Core\Idno::site()->session()->currentUser()->mastodon as $server => $value) {
+                        if (!empty($server['bearer'])) {
+                            $accounts++;
+                        }
+                    }
+                    if ($accounts > 0) {
+                        return true;
+                    }
+                }
+                return true;
+            }
+            return false;
         }
 
     }

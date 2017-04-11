@@ -33,9 +33,10 @@ $user = Idno::site()->session()->currentUser();
             <label for="login">Mastodon login (email address)</label>
             <input type="text" class="form-control disabled" name="login" id="login" placeholder="your@email.net" disabled="disabled" value="<?= $account['login'] ?>" />
             <label for="username">Mastodon full username</label>
-            <input type="text" class="form-control disabled" name="username" disabled="disabled" id="username" placeholder="yourNick@mastodon.social" value="<?= $account['username'] ?>" />
+            <input type="text" class="form-control disabled" name="username" disabled="disabled" id="username" placeholder="yourNick@mastodon.social" value="<?= $account['username'].'@'.$server ?>" />
             <button type="submit" class="btn btn-primary" disabled="disabled">Save</button>
         </form>
+        <p>DEBUG</p>
         <div class="control-group">
             <div class="controls-config">
                 <div class="row">

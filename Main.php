@@ -1,6 +1,8 @@
 <?php
 
 namespace IdnoPlugins\Mastodon {
+    
+    use theCodingCompany\Mastodon;
 
     class Main extends \Idno\Common\Plugin {
 

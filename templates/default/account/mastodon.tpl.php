@@ -27,6 +27,7 @@ $user = Idno::site()->session()->currentUser();
         $account = $user->mastodon;
         $server = $account['server'];
         $authUrl = Idno::site()->config()->mastodon[$server]['auth_url'];
+        \Idno\Core\Idno::site()->logging()->log("Mastodon: DEBUG authurl ".$authUrl." /DEBUG");
         ?>
         <p>Authorize with <?= $server?></p>
         <form class="form-horizontal" method="post">

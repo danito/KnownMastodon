@@ -158,4 +158,21 @@ class Mastodon
         return false;
     }
     
+    public function postStatus($params){
+        if($this->mastodon_user_id > 0){
+            //Create our object
+            $http = HttpRequest::Instance($this->getApiURL());
+            $statusses = $http::Post(
+                "api/v1/statuses",
+                $params,
+                $this->getHeaders()
+            );
+            if(is_array($statusses) && count($statusses) > 0){
+                return $statusses;
+            }
+            
+        }
+        return false;
+    }
+    
 }

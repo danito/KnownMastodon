@@ -36,7 +36,7 @@ namespace IdnoPlugins\Mastodon\Pages {
                 $login = $this->getInput('login');
                 $username = $this->getInput('username');
                 $server = $tmp[1];
-                $user->mastodon = array('server' => $server, 'login' => $login, 'username' => $username, 'bearer' => '');
+                $user->mastodon = array('server' => $server, 'login' => $login, 'username' => $tmp[0], 'bearer' => '');
                 $user->save();
                 if (empty(Idno::site()->config()->mastodon[$server])) {
                     $mastodon = \Idno\Core\site()->plugins()->get('Mastodon');

@@ -30,30 +30,37 @@ $user = Idno::site()->session()->currentUser();
         $authUrl = \Idno\Core\site()->config->config['mastodon'][$server][0]['auth_url'];
         ?>
         <p>Authorize with <?= $server ?></p>
-        <form action="<?= $baseURL ?>account/mastodon/" class="form-horizontal" method="post"><label for="login">Mastodon login (email address)</label>
-            <input type="text" class="form-control disabled" name="login" id="login" placeholder="your@email.net" disabled="disabled" value="<?= $account['login'] ?>" />
+        <div class="control-group">
+            <div class="controls-config">
+                <div class="row">
+                    <div class="col-md-7">
+                        <p>
+                            Your account is currently connected to Mastodon. Public updates, pictures, and posts
+                            that you publish here
+                            can be cross-posted to <?= $server ?>.
+                        </p>
+
+                        <div class="social">
+                            <form action="<?= $authUrl ?>"
+                                  class="form-horizontal" method="post">
+                                 <input type="text" class="form-control disabled" name="login" id="login" placeholder="your@email.net" disabled="disabled" value="<?= $account['login'] ?>" />
             <label for="username">Mastodon full username</label>
             <input type="text" class="form-control disabled" name="username" disabled="disabled" id="username" placeholder="yourNick@mastodon.social" value="<?= $account['username'] . '@' . $server ?>" />
             <button type="submit" class="btn btn-primary" disabled="disabled">Save</button>
 
-            <p>DEBUG</p>
-            <div class="control-group">
-                <div class="controls-config">
-                    <div class="row">
-                        <div class="col-md-7">
-                            <div class="social">
-
                                 <p>
-                                    <a href="<?= $authUrl ?>" class="connect mastodon"><i class="fa fa-user-circle"></i>
-                                        Connect <?= $server ?></a>
-                                </p>
-                            </div>
-                        </div>
+                                    <input type="hidden" name="remove" value="1"/>
+                                                <button type="submit" class="btn btn-primary">Connect to <?= $server ?></button>
 
+                                    <?= \Idno\Core\site()->actions()->signForm('/account/mastodon/') ?>
+                                </p>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </form>
+        </div>
+       
         <?php
     } else {
         $account = $user->mastodon;
@@ -88,14 +95,5 @@ $user = Idno::site()->session()->currentUser();
         <?php
     }
     ?>
-    <form action="<?= $baseURL ?>account/mastodon/" class="form-horizontal" method="post">
-        <div class="social">
-            <p>
-                <input type="hidden" name="remove" class="form-control" value="nxD4n">
-                <button type="submit" class="tw connect connected"><i class="fa fa-people-circle"></i>
-                    @nxD4n (Disconnect)</button>
-            </p>
-            <?= \Idno\Core\site()->actions()->signForm('/account/mastodon/') ?>
-        </div>
-    </form>    
+   
 </div>    

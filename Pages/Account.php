@@ -59,7 +59,7 @@ namespace IdnoPlugins\Mastodon\Pages {
                     $knownuser = \Idno\Core\site()->session()->currentUser()->getHandle();
                     $serverConfig = array('name' => $server,
                         'user' => $knownuser,
-                        'issued_at' => now,
+                        'issued_at' => time(),
                         'client_id' => $clientID,
                         'client_secret' => $clientSecret,
                         'auth_url' => $authUrl);

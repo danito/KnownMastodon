@@ -165,10 +165,8 @@ trait oAuth {
      * @param type $auth_code
      */
     public function getAccessToken($auth_code = "") {
-        error_log("Mastodon DEBUG : getAccessToken start");
 
         if (is_array($this->credentials) && isset($this->credentials["client_id"])) {
-            error_log("Mastodon DEBUG : oAuth start");
             //Request access token in exchange for our Authorization token
             $http = HttpRequest::Instance("https://{$this->mastodon_api_url}");
             $token_info = $http::Post(
@@ -180,11 +178,8 @@ trait oAuth {
                         "code" => $auth_code
                             ], $this->headers
             );
-            error_log("Mastodon DEBUG : getAccessToken TOKEN INFO");
 
-            error_log("Maston Debug getAcessToken info ".var_export($token_info, TRUE));
             $json = json_encode($token_info);
-                        error_log("Maston Debug getAcessToken json ".var_export($json,true));
 
             //Save our token info
             return $this->_handle_bearer($token_info);

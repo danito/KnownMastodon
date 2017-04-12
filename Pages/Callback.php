@@ -1,39 +1,44 @@
 <?php
 
+/**
+ * Plugin administration
+ */
+
+namespace IdnoPlugins\Mastodon\Pages {
+
     /**
-     * Plugin administration
+     * Default class to serve the homepage
      */
+    class Callback extends \Idno\Common\Page {
 
-    namespace IdnoPlugins\Mastodon\Pages {
+        function get($params = array()) {
+            $this->gatekeeper(); // Logged-in users only
+            if ($token = $this->getInput('code')) {
+                $user = \Idno\Core\site()->session()->currentUser();
+                $mastodon = $user->mastodon;
+                $server = $mastodon['server'];
 
-        /**
-         * Default class to serve the homepage
-         */
-        class Callback extends \Idno\Common\Page
-        {
+                if ($mastodon = \Idno\Core\site()->plugins()->get('Mastodon')) {
+                    $mastodonAPI = $mastodon->connect($server);
+                    $credentials = $mastodon->getCredentials($server);
+                    $mastodonAPI->setCredentials($credentials);
+                    $testcreds = $mastodonAPI->getCredentials();
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon: DEBUG callback credentials " . $server . " " . var_export($testcreds, true) . " /DEBUG");
+                    $token_info = $mastodonAPI->getAccessToken($token);
+                    $user->mastodon['bearer'] = $token_info['access_token'];
+                    $user->save();
 
-            function get($params = array())
-            {
-                $this->gatekeeper(); // Logged-in users only
-                if ($token = $this->getInput('access_token')) {
-                    $user = \Idno\Core\site()->session()->currentUser();
-                    $server = $user->mastodon['server'];
-                    if ($mastodon = \Idno\Core\site()->plugins()->get('Mastodon')) {
-                        $mastodonAPI = $mastodon->connect($server);
-                        $token_info = $mastodonAPI->getAccessToken($token);
-                        $bearer = $token_info['bearer'];
-                        $user->mastodon['bearer'] = $bearer;
-                        $user->save();
-
-                        if (!empty($_SESSION['onboarding_passthrough'])) {
-                            unset($_SESSION['onboarding_passthrough']);
-                            $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'begin/connect-forwarder');
-                        }
-                        $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'account/mastodon');
+                    if (!empty($_SESSION['onboarding_passthrough'])) {
+                        unset($_SESSION['onboarding_passthrough']);
+                        $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'begin/connect-forwarder');
                     }
+                    $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'account/mastodon');
+                } else {
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon: DEBUG callback  " . $server . " " . var_export($mastodon, true) . " /DEBUG");
                 }
             }
-
         }
 
     }
+
+}

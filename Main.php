@@ -1,8 +1,6 @@
 <?php
 
 namespace IdnoPlugins\Mastodon {
-    
-    use theCodingCompany\Mastodon;
 
     class Main extends \Idno\Common\Plugin {
 
@@ -72,6 +70,9 @@ namespace IdnoPlugins\Mastodon {
                     $params = array('status' => $status);
                     $credentials = $this->getCredentials();
                     $mastodonAPI->setCredentials($credentials);
+                    $userinf = $mastodonAPI->getUser();
+                    \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($userinf, true));
+
                     $response = $mastodonAPI->postStatus($params);
                     if (!empty($response)) {
                         if ($json = json_decode($response)) {
@@ -83,7 +84,7 @@ namespace IdnoPlugins\Mastodon {
                                 \Idno\Core\Idno::site()->logging()->log("Mastodon tokens: " . var_export(\Idno\Core\Idno::site()->session()->currentUser()->Mastodon, true));
                             }
                         } else {
-                            \Idno\Core\Idno::site()->logging()->log("Bad JSON from Mastodon: " . var_export($json, true));
+                            \Idno\Core\Idno::site()->logging()->log("Mastodon: ");
                         }
                     }
                 }
@@ -107,24 +108,23 @@ namespace IdnoPlugins\Mastodon {
                 $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
             }
             $credentials = array();
-            $credentials['client_id'] = \Idno\Core\Idno::site()->config()->mastodon[$server]['client_id'];
-            $credentials['client_secret'] = \Idno\Core\Idno::site()->config()->mastodon[$server]['client_secret'];
+            $credentials['client_id'] = \Idno\Core\Idno::site()->config()->mastodon[$server][0]['client_id'];
+            $credentials['client_secret'] = \Idno\Core\Idno::site()->config()->mastodon[$server][0]['client_secret'];
             $credentials['bearer'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['bearer'];
             return $credentials;
         }
 
         function connect($server = false) {
-            require_once(dirname(__FILE__) . '/autoloader.php');
-           // require_once(dirname(__FILE__) . '/external/theCodingCompa  ny/Mastodon.php');
+            require_once(dirname(__FILE__) . '/autoload.php');
+            // require_once(dirname(__FILE__) . '/external/theCodingCompa  ny/Mastodon.php');
             if (!empty(\Idno\Core\Idno::site()->config()->mastodon)) {
                 $callback = \Idno\Core\Idno::site()->config()->getDisplayURL() . "mastodon/callback/";
                 if (empty($server) && isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {
                     $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
-                } 
+                }
 
-                return new theCodingCompany\Mastodon($callback, $server);
+                return new \theCodingCompany\Mastodon($callback, $server);
             }
-            \Idno\Core\Idno::site()->logging()->log("Mastodon DEBUG: config empty");
             return false;
         }
 

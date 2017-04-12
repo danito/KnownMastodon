@@ -71,20 +71,18 @@ namespace IdnoPlugins\Mastodon {
                     $credentials = $this->getCredentials();
                     $mastodonAPI->setCredentials($credentials);
                     $userinf = $mastodonAPI->getUser();
-                    \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($userinf, true));
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon (getUser): " . var_export($userinf, true));
 
                     $response = $mastodonAPI->postStatus($params);
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon (status response): " . var_export($response, true));
                     if (!empty($response)) {
-                        if ($json = json_decode($response)) {
-                            if (!empty($json->id)) {
-                                $object->setPosseLink('mastodon', $json->url, $json->id, $json->account->username);
+                            if (!empty($response['id'])) {
+                                $object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
                                 $object->save();
                             } else {
                                 \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($json, true));
                                 \Idno\Core\Idno::site()->logging()->log("Mastodon tokens: " . var_export(\Idno\Core\Idno::site()->session()->currentUser()->Mastodon, true));
                             }
-                        } else {
-                            \Idno\Core\Idno::site()->logging()->log("Mastodon: ");
                         }
                     }
                 }

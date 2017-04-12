@@ -76,13 +76,12 @@ namespace IdnoPlugins\Mastodon {
                     $response = $mastodonAPI->postStatus($params);
                     \Idno\Core\Idno::site()->logging()->log("Mastodon (status response): " . var_export($response, true));
                     if (!empty($response)) {
-                            if (!empty($response['id'])) {
-                                $object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
-                                $object->save();
-                            } else {
-                                \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($json, true));
-                                \Idno\Core\Idno::site()->logging()->log("Mastodon tokens: " . var_export(\Idno\Core\Idno::site()->session()->currentUser()->Mastodon, true));
-                            }
+                        if (!empty($response['id'])) {
+                            $object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
+                            $object->save();
+                        } else {
+                            \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($json, true));
+                            \Idno\Core\Idno::site()->logging()->log("Mastodon tokens: " . var_export(\Idno\Core\Idno::site()->session()->currentUser()->Mastodon, true));
                         }
                     }
                 }

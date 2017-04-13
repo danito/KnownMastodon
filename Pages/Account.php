@@ -18,8 +18,10 @@ namespace IdnoPlugins\Mastodon\Pages {
               } */
             $oauth_url = \Idno\Core\site()->config()->getDisplayURL() . 'mastodon/auth';
             $t = \Idno\Core\site()->template();
+            
             $body = $t->__(array('oauth_url' => $oauth_url))->draw('account/mastodon');
             $t->__(array('title' => 'Mastodon', 'body' => $body))->drawPage();
+            
         }
 
         function postContent() {

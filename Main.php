@@ -36,7 +36,7 @@ namespace IdnoPlugins\Mastodon {
                     if (is_array($mastodon)) {
 
                         if (array_key_exists('bearer', $mastodon)) {
-                            \Idno\Core\Idno::site()->syndication()->registerServiceAccount('mastodon', $mastodon['server'], $mastodon['server']);
+                            \Idno\Core\Idno::site()->syndication()->registerServiceAccount('mastodon', $mastodon['username']."@".$mastodon['server'], $mastodon['username']."@".$mastodon['server']);
                         }
                     }
                 }

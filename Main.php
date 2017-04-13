@@ -77,7 +77,8 @@ namespace IdnoPlugins\Mastodon {
                     \Idno\Core\Idno::site()->logging()->log("Mastodon (status response): " . var_export($response, true));
                     if (!empty($response)) {
                         if (!empty($response['id'])) {
-                            $object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
+                            //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
+                            $object->setPosseLink('mastodon', $response['url'], $response['account']['username'], $response['account']['username']);
                             $object->save();
                         } else {
                             \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($json, true));

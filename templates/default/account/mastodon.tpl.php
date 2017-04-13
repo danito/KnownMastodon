@@ -93,6 +93,8 @@ $user = Idno::site()->session()->currentUser();
             </div>
         </div>
         <?php
+                        \Idno\Core\Idno::site()->logging()->log("Mastodon debug : ".  var_export($account,true));
+
     }
     ?>
    

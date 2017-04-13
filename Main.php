@@ -36,7 +36,7 @@ namespace IdnoPlugins\Mastodon {
                     if (is_array($mastodon)) {
 
                         if (array_key_exists('bearer', $mastodon)) {
-                            \Idno\Core\Idno::site()->syndication()->registerServiceAccount('mastodon', $mastodon['username']."@".$mastodon['server'], $mastodon['username']."@".$mastodon['server']);
+                            \Idno\Core\Idno::site()->syndication()->registerServiceAccount('mastodon', $mastodon['username'] . "@" . $mastodon['server'], $mastodon['username'] . "@" . $mastodon['server']);
                         }
                     }
                 }
@@ -72,13 +72,13 @@ namespace IdnoPlugins\Mastodon {
                     $mastodonAPI->setCredentials($credentials);
                     $userinf = $mastodonAPI->getUser();
                     \Idno\Core\Idno::site()->logging()->log("Mastodon (getUser): " . var_export($userinf, true));
-
+                    $server = $this->getServer();
                     $response = $mastodonAPI->postStatus($params);
                     \Idno\Core\Idno::site()->logging()->log("Mastodon (status response): " . var_export($response, true));
                     if (!empty($response)) {
                         if (!empty($response['id'])) {
                             //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
-                            $object->setPosseLink('mastodon', $response['url'], $response['account']['username'], $response['account']['username']);
+                            $object->setPosseLink('mastodon', $response['url'], $response['account']['username']."@".$server, $response['account']['username']."@".$server);
                             $object->save();
                         } else {
                             \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($json, true));
@@ -110,6 +110,13 @@ namespace IdnoPlugins\Mastodon {
             $credentials['client_secret'] = \Idno\Core\Idno::site()->config()->mastodon[$server][0]['client_secret'];
             $credentials['bearer'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['bearer'];
             return $credentials;
+        }
+
+        function getServer() {
+            if (!empty(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {
+                return \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
+            } 
+            return false;
         }
 
         function connect($server = false) {

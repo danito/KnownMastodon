@@ -1,1 +1,1 @@
-<i class="fa fa-user-circle" aria-hidden="true"></i>
+<i class="fa fa-users"></i>

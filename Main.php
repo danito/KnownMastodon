@@ -79,12 +79,12 @@ namespace IdnoPlugins\Mastodon {
 
                     $res = $this->postStatus($statuses);
                     $response = json_decode($res['content']);
-                    
+
                     $id = $response->id;
                     $idd = $response->account->username;
                     if (!empty($response)) {
                         if (!empty($id)) {
-                            $mastodon_user = $response->account->username. "@" . $server;
+                            $mastodon_user = $response->account->username . "@" . $server;
                             //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
                             $object->setPosseLink('mastodon', $response->url, $mastodon_user, $mastodon_user);
                             $object->save();
@@ -139,9 +139,9 @@ namespace IdnoPlugins\Mastodon {
                                 $params['file'] = $filename;
                                 $params['filename'] = basename($filename);
                                 $params['mime-type'] = $attachment['mime-type'];
-                                
+
                                 $response = $this->postMedia($params);
-                                
+
                                 $content = json_decode($response['content']);
                                 if (!empty($content->id)) {
                                     $media_ids[] = $content->id;
@@ -156,8 +156,8 @@ namespace IdnoPlugins\Mastodon {
                             'media_ids' => $media_ids,
                             'sensititve' => $nsfw);
                         try {
-                            $response = $this->postStatus($params);
-                            //\Idno\Core\Idno::site()->logging()->log($response);
+                            $res = $this->postStatus($statuses);
+                            $response = json_decode($res['content']);                            //\Idno\Core\Idno::site()->logging()->log($response);
                         } catch (\Exception $e) {
                             \Idno\Core\Idno::site()->logging()->log($e);
                         }
@@ -165,9 +165,10 @@ namespace IdnoPlugins\Mastodon {
 
                     @unlink($filename);
                     if (!empty($response)) {
-                        if (!empty($response['id'])) {
+                        if (!empty($response->id)) {
+                            $mastodon_user = $response->account->username . "@" . $server;
                             //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
-                            $object->setPosseLink('mastodon', $response['url'], $response['account']['username'] . "@" . $server, $response['account']['username'] . "@" . $server);
+                            $object->setPosseLink('mastodon', $response->url, $mastodon_user, $mastodon_user);
                             $object->save();
                         } else {
                             \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($response, true));
@@ -181,7 +182,7 @@ namespace IdnoPlugins\Mastodon {
         }
 
         function postStatus($status) {
-            
+
             // split text if status has content warning #cw
             $cwstatus = explode("#cw", $status['status'], 2);
             if (!empty($cwstatus[1])) {

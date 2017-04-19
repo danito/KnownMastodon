@@ -4,6 +4,8 @@ namespace IdnoPlugins\Mastodon {
 
     class Main extends \Idno\Common\Plugin {
 
+        //use \Idno\Core
+
         function registerPages() {
             // Auth URL
             \Idno\Core\Idno::site()->addPageHandler('mastodon/auth', '\IdnoPlugins\Twitter\Pages\Auth');
@@ -27,7 +29,7 @@ namespace IdnoPlugins\Mastodon {
                 \Idno\Core\Idno::site()->logging()->log("Mastodon: registerService");
 
                 return $this->hasMastodon();
-            }, array('note', 'article', 'image', 'media', 'rsvp', 'bookmark', 'like', 'share'));
+            }, array('note', 'image'));
 
             \Idno\Core\Idno::site()->addEventHook('user/auth/success', function (\Idno\Core\Event $event) {
                 \Idno\Core\Idno::site()->logging()->log("Mastodon: RegisterEventHook");
@@ -55,7 +57,7 @@ namespace IdnoPlugins\Mastodon {
                     $status_full = trim($object->getDescription());
                     $status = preg_replace('/<[^\>]*>/', '', $status_full); //strip_tags($status_full);
                     $status = str_replace("\r", '', $status);
-                    $status = html_entity_decode($status);
+
 
                     // TODO:  handle inreply-to
                     // Permalink will be included if the status message is truncated
@@ -64,34 +66,141 @@ namespace IdnoPlugins\Mastodon {
                     $permashortlink = \Idno\Core\Idno::site()->config()->indieweb_reference ? $object->getShortURL() : false;
                     $lnklen = strlen($permalink);
                     $stlen = strlen($status);
-                    if (($lnklen + $stlen) > 500) {
-                        $status = $this->truncate($status, (495 - $lnklen));
+                    if (($stlen) >= 500) {
+                        $status = $this->truncate($status, (495 - $lnklen))." ".$permalink;
                     }
                     $params = array('status' => $status);
                     $credentials = $this->getCredentials();
                     $mastodonAPI->setCredentials($credentials);
-                    $userinf = $mastodonAPI->getUser();
-                    \Idno\Core\Idno::site()->logging()->log("Mastodon (getUser): " . var_export($userinf, true));
+
+                    //$userinf = $mastodonAPI->getUser();
+                    //\Idno\Core\Idno::site()->logging()->log("Mastodon (getUser): " . var_export($userinf, true));
                     $server = $this->getServer();
                     $response = $mastodonAPI->postStatus($params);
-                    \Idno\Core\Idno::site()->logging()->log("Mastodon (status response): " . var_export($response, true));
                     if (!empty($response)) {
                         if (!empty($response['id'])) {
                             //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
-                            $object->setPosseLink('mastodon', $response['url'], $response['account']['username']."@".$server, $response['account']['username']."@".$server);
+                            $object->setPosseLink('mastodon', $response['url'], $response['account']['username'] . "@" . $server, $response['account']['username'] . "@" . $server);
+                            $object->save();
+                        } else {
+                            \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($response, true));
+                            \Idno\Core\Idno::site()->logging()->log("Mastodon tokens: " . var_export(\Idno\Core\Idno::site()->session()->currentUser()->Mastodon, true));
+                        }
+                    }
+                }
+            });
+
+            // Push "images" to Twitter
+            \Idno\Core\Idno::site()->addEventHook('post/image/mastodon', function (\Idno\Core\Event $event) {
+                if ($this->hasMastodon()) {
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon Media Debug : we haz Mastodon");
+                    $eventdata = $event->data();
+                    $object = $eventdata['object'];
+                    $mastodonAPI = $this->connect();
+                    $credentials = $this->getCredentials();
+                    $mastodonAPI->setCredentials($credentials);
+                    $userinf = $mastodonAPI->getUser();
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon (getUser): " . var_export($userinf, true));
+
+                    $server = $this->getServer();
+                    $status = $object->getTitle();
+                    if ($status == 'Untitled') {
+                        //$status = '';
+                    }
+                    $status = html_entity_decode($status);
+                    $media_ids = array();
+
+                    // Let's first try getting the thumbnail
+                    if (!empty($object->thumbnail_id)) {
+                        if ($thumb = (array) \Idno\Entities\File::getByID($object->thumbnail_id)) {
+                            $attachments = array($thumb['file']);
+                        }
+                    }
+                    // No? Then we'll use the main event
+                    if (empty($attachments)) {
+                        $attachments = $object->getAttachments();
+                    }
+                    if (!empty($attachments)) {
+                        \Idno\Core\Idno::site()->logging()->log("Mastodon Media Debug : we haz attachments" . var_export($attachments, true));
+
+                        foreach ($attachments as $attachment) {
+                            if ($bytes = \Idno\Entities\File::getFileDataFromAttachment($attachment)) {
+                                $filename = tempnam(sys_get_temp_dir(), 'knownmastodon');
+                                file_put_contents($filename, $bytes);
+                                $params['file'] = $filename;
+                                $params['bearer'] = $credentials['bearer'];
+                                $params['filename'] = basename($filename);
+                                $params['mime-type'] = $attachment['mime-type'];
+                                $params['server'] = $server;
+
+                                $response = $this->postMedia($params);
+                                $content = json_decode($response['content']);
+                                if (!empty($content->id)) {
+                                    $media_ids[] = $content->id;
+                                } else {
+                                    \Idno\Core\Idno::site()->logging()->log("Mastodon Media Debug : we haz no response from mastodon " . $server);
+                                }
+                            }
+                        }
+                    }
+                    if (!empty($media_ids)) {
+                        $params = array('status' => $status,
+                            'media_ids' => $media_ids);
+                        try {
+                            $response = $mastodonAPI->postStatus($params);
+                            \Idno\Core\Idno::site()->logging()->log($response);
+                        } catch (\Exception $e) {
+                            \Idno\Core\Idno::site()->logging()->log($e);
+                        }
+                    }
+
+                    @unlink($filename);
+                    if (!empty($response)) {
+                        if (!empty($response['id'])) {
+                            //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
+                            $object->setPosseLink('mastodon', $response['url'], $response['account']['username'] . "@" . $server, $response['account']['username'] . "@" . $server);
                             $object->save();
                         } else {
                             \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($json, true));
                             \Idno\Core\Idno::site()->logging()->log("Mastodon tokens: " . var_export(\Idno\Core\Idno::site()->session()->currentUser()->Mastodon, true));
                         }
                     }
+                } else {
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon Media Debug : we haz no Mastodon");
                 }
             });
         }
 
+        function postMedia($params) {
+            $file = $params['file'];
+            $filename = $params['filename'];
+            $mime = $params['mime-type'];
+            $instance = "https://" . $params['server'] . '/api/v1/media';
+            $bearer = $params['bearer'];
+            \Idno\Core\Idno::site()->logging()->log("Mastodon FILE TEST: " . var_export($bearer, true));
+            $result = \Idno\Core\Webservice::post($instance, [
+                        'file' => \Idno\Core\WebserviceFile::createFromCurlString("@" . $file . ";filename=" . $filename . ";type=" . $mime)
+                            //'file' => $file
+                            ], [
+                        'Accept: application/json',
+                        'Authorization: Bearer ' . $bearer . "",
+            ]);
+            $pp = \Idno\Core\Webservice::getLastRequest();
+            \Idno\Core\Idno::site()->logging()->log("Mastodon FILE PPPPPPPPPPPP: " . var_export($pp, true));
+
+            return $result;
+        }
+
+        /**
+         * @param type $string
+         * @param type $length
+         * @param type $append
+         * @return string
+
+         * */
         function truncate($string, $length = 100, $append = "&hellip;") {
             $string = trim($string);
-
+            $append = html_entity_decode($append);
             if (strlen($string) > $length) {
                 $string = wordwrap($string, $length);
                 $string = explode("\n", $string, 2);
@@ -115,7 +224,7 @@ namespace IdnoPlugins\Mastodon {
         function getServer() {
             if (!empty(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {
                 return \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
-            } 
+            }
             return false;
         }
 

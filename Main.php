@@ -26,13 +26,11 @@ namespace IdnoPlugins\Mastodon {
 
         function registerEventHooks() {
             \Idno\Core\Idno::site()->syndication()->registerService('mastodon', function () {
-                \Idno\Core\Idno::site()->logging()->log("Mastodon: registerService");
 
                 return $this->hasMastodon();
             }, array('note', 'image'));
 
             \Idno\Core\Idno::site()->addEventHook('user/auth/success', function (\Idno\Core\Event $event) {
-                \Idno\Core\Idno::site()->logging()->log("Mastodon: RegisterEventHook");
                 if ($this->hasMastodon()) {
                     $mastodon = \Idno\Core\Idno::site()->session()->currentUser()->mastodon;
                     if (is_array($mastodon)) {
@@ -53,11 +51,16 @@ namespace IdnoPlugins\Mastodon {
                     } else {
                         $mastodonAPI = $this->connect();
                     }
+                    $tags = $object->getTags();
+                    $tags = array_map('strtolower', $tags);
+                    $nfsw = false;
+                    if (!empty($tags) && in_array("#nsfw", $tags)) {
+                        $nfsw = true;
+                    }
 
                     $status_full = trim($object->getDescription());
                     $status = preg_replace('/<[^\>]*>/', '', $status_full); //strip_tags($status_full);
                     $status = str_replace("\r", '', $status);
-
 
                     // TODO:  handle inreply-to
                     // Permalink will be included if the status message is truncated
@@ -67,20 +70,23 @@ namespace IdnoPlugins\Mastodon {
                     $lnklen = strlen($permalink);
                     $stlen = strlen($status);
                     if (($stlen) >= 500) {
-                        $status = $this->truncate($status, (495 - $lnklen))." ".$permalink;
+                        $status = $this->truncate($status, (495 - $lnklen)) . " " . $permalink;
                     }
-                    $params = array('status' => $status);
-                    $credentials = $this->getCredentials();
-                    $mastodonAPI->setCredentials($credentials);
+                    $statuses = array('status' => $status,
+                        'sensitive' => $nfsw);
 
-                    //$userinf = $mastodonAPI->getUser();
-                    //\Idno\Core\Idno::site()->logging()->log("Mastodon (getUser): " . var_export($userinf, true));
                     $server = $this->getServer();
-                    $response = $mastodonAPI->postStatus($params);
+
+                    $res = $this->postStatus($statuses);
+                    $response = json_decode($res['content']);
+                    
+                    $id = $response->id;
+                    $idd = $response->account->username;
                     if (!empty($response)) {
-                        if (!empty($response['id'])) {
+                        if (!empty($id)) {
+                            $mastodon_user = $response->account->username. "@" . $server;
                             //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
-                            $object->setPosseLink('mastodon', $response['url'], $response['account']['username'] . "@" . $server, $response['account']['username'] . "@" . $server);
+                            $object->setPosseLink('mastodon', $response->url, $mastodon_user, $mastodon_user);
                             $object->save();
                         } else {
                             \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($response, true));
@@ -93,22 +99,26 @@ namespace IdnoPlugins\Mastodon {
             // Push "images" to Twitter
             \Idno\Core\Idno::site()->addEventHook('post/image/mastodon', function (\Idno\Core\Event $event) {
                 if ($this->hasMastodon()) {
-                    \Idno\Core\Idno::site()->logging()->log("Mastodon Media Debug : we haz Mastodon");
                     $eventdata = $event->data();
                     $object = $eventdata['object'];
                     $mastodonAPI = $this->connect();
-                    $credentials = $this->getCredentials();
-                    $mastodonAPI->setCredentials($credentials);
-                    $userinf = $mastodonAPI->getUser();
-                    \Idno\Core\Idno::site()->logging()->log("Mastodon (getUser): " . var_export($userinf, true));
-
                     $server = $this->getServer();
                     $status = $object->getTitle();
-                    if ($status == 'Untitled') {
-                        //$status = '';
-                    }
+                    //$userinf = $mastodonAPI->getUser();
+                    //\Idno\Core\Idno::site()->logging()->log("Mastodon (getUser): " . var_export($userinf, true));
+
                     $status = html_entity_decode($status);
                     $media_ids = array();
+                    $tags = $object->getTags();
+                    $tags = array_map('strtolower', $tags);
+                    $nfsw = false;
+                    $cw = false;
+                    if (!empty($tags) && in_array("#nsfw", $tags)) {
+                        $nfsw = true;
+                    }
+                    if (!empty($tags) && in_array("#cw", $tags)) {
+                        $cw = true;
+                    }
 
                     // Let's first try getting the thumbnail
                     if (!empty($object->thumbnail_id)) {
@@ -121,19 +131,17 @@ namespace IdnoPlugins\Mastodon {
                         $attachments = $object->getAttachments();
                     }
                     if (!empty($attachments)) {
-                        \Idno\Core\Idno::site()->logging()->log("Mastodon Media Debug : we haz attachments" . var_export($attachments, true));
 
                         foreach ($attachments as $attachment) {
                             if ($bytes = \Idno\Entities\File::getFileDataFromAttachment($attachment)) {
                                 $filename = tempnam(sys_get_temp_dir(), 'knownmastodon');
                                 file_put_contents($filename, $bytes);
                                 $params['file'] = $filename;
-                                $params['bearer'] = $credentials['bearer'];
                                 $params['filename'] = basename($filename);
                                 $params['mime-type'] = $attachment['mime-type'];
-                                $params['server'] = $server;
-
+                                
                                 $response = $this->postMedia($params);
+                                
                                 $content = json_decode($response['content']);
                                 if (!empty($content->id)) {
                                     $media_ids[] = $content->id;
@@ -145,10 +153,11 @@ namespace IdnoPlugins\Mastodon {
                     }
                     if (!empty($media_ids)) {
                         $params = array('status' => $status,
-                            'media_ids' => $media_ids);
+                            'media_ids' => $media_ids,
+                            'sensititve' => $nsfw);
                         try {
-                            $response = $mastodonAPI->postStatus($params);
-                            \Idno\Core\Idno::site()->logging()->log($response);
+                            $response = $this->postStatus($params);
+                            //\Idno\Core\Idno::site()->logging()->log($response);
                         } catch (\Exception $e) {
                             \Idno\Core\Idno::site()->logging()->log($e);
                         }
@@ -161,7 +170,7 @@ namespace IdnoPlugins\Mastodon {
                             $object->setPosseLink('mastodon', $response['url'], $response['account']['username'] . "@" . $server, $response['account']['username'] . "@" . $server);
                             $object->save();
                         } else {
-                            \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($json, true));
+                            \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($response, true));
                             \Idno\Core\Idno::site()->logging()->log("Mastodon tokens: " . var_export(\Idno\Core\Idno::site()->session()->currentUser()->Mastodon, true));
                         }
                     }
@@ -171,13 +180,34 @@ namespace IdnoPlugins\Mastodon {
             });
         }
 
+        function postStatus($status) {
+            
+            // split text if status has content warning #cw
+            $cwstatus = explode("#cw", $status['status'], 2);
+            if (!empty($cwstatus[1])) {
+                $status['status'] = $cwstatus[1];
+                $status['spoiler_text'] = $cwstatus[0];
+            }
+
+            $server = $this->getServer();
+            $credentials = $this->getCredentials();
+            $bearer = $credentials['bearer'];
+            $instance = "https://" . $server . '/api/v1/statuses';
+            $headers = array('Accept: application/json',
+                'Authorization: Bearer ' . $bearer . "");
+            $result = \Idno\Core\Webservice::post($instance, $status, $headers);
+
+            return $result;
+        }
+
         function postMedia($params) {
             $file = $params['file'];
             $filename = $params['filename'];
             $mime = $params['mime-type'];
-            $instance = "https://" . $params['server'] . '/api/v1/media';
-            $bearer = $params['bearer'];
-            \Idno\Core\Idno::site()->logging()->log("Mastodon FILE TEST: " . var_export($bearer, true));
+            $server = $this->getServer();
+            $credentials = $this->getCredentials();
+            $bearer = $credentials['bearer'];
+            $instance = "https://" . $server . '/api/v1/media';
             $result = \Idno\Core\Webservice::post($instance, [
                         'file' => \Idno\Core\WebserviceFile::createFromCurlString("@" . $file . ";filename=" . $filename . ";type=" . $mime)
                             //'file' => $file
@@ -185,8 +215,6 @@ namespace IdnoPlugins\Mastodon {
                         'Accept: application/json',
                         'Authorization: Bearer ' . $bearer . "",
             ]);
-            $pp = \Idno\Core\Webservice::getLastRequest();
-            \Idno\Core\Idno::site()->logging()->log("Mastodon FILE PPPPPPPPPPPP: " . var_export($pp, true));
 
             return $result;
         }

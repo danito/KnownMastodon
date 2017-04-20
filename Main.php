@@ -28,7 +28,9 @@ namespace IdnoPlugins\Mastodon {
             \Idno\Core\Idno::site()->syndication()->registerService('mastodon', function () {
 
                 return $this->hasMastodon();
-            }, array('note', 'image'));
+            }, array('article','note', 'image', 'bookmark'));
+            
+            //array('note', 'article', 'image', 'media', 'rsvp', 'bookmark', 'like', 'share'));
 
             \Idno\Core\Idno::site()->addEventHook('user/auth/success', function (\Idno\Core\Event $event) {
                 if ($this->hasMastodon()) {
@@ -69,9 +71,8 @@ namespace IdnoPlugins\Mastodon {
                     $permashortlink = \Idno\Core\Idno::site()->config()->indieweb_reference ? $object->getShortURL() : false;
                     $lnklen = strlen($permalink);
                     $stlen = strlen($status);
-                    if (($stlen) >= 500) {
-                        $status = $this->truncate($status, (495 - $lnklen)) . " " . $permalink;
-                    }
+                    $status = $this->truncate($status, $permalink, $permashortlink);
+
                     $statuses = array('status' => $status,
                         'sensitive' => $nfsw);
 
@@ -79,9 +80,7 @@ namespace IdnoPlugins\Mastodon {
 
                     $res = $this->postStatus($statuses);
                     $response = json_decode($res['content']);
-
                     $id = $response->id;
-                    $idd = $response->account->username;
                     if (!empty($response)) {
                         if (!empty($id)) {
                             $mastodon_user = $response->account->username . "@" . $server;
@@ -104,20 +103,20 @@ namespace IdnoPlugins\Mastodon {
                     $mastodonAPI = $this->connect();
                     $server = $this->getServer();
                     $status = $object->getTitle();
-                    //$userinf = $mastodonAPI->getUser();
-                    //\Idno\Core\Idno::site()->logging()->log("Mastodon (getUser): " . var_export($userinf, true));
-
                     $status = html_entity_decode($status);
+                    // Permalink will be included if the status message is truncated
+                    $permalink = $object->getSyndicationURL();
+                    // Add link to original post, if IndieWeb references have been requested
+                    $permashortlink = \Idno\Core\Idno::site()->config()->indieweb_reference ? $object->getShortURL() : false;
+                    
+                    $status = $this->truncate($status, $permalink, $permashortlink);
+                    
                     $media_ids = array();
                     $tags = $object->getTags();
                     $tags = array_map('strtolower', $tags);
-                    $nfsw = false;
-                    $cw = false;
+                    $nsfw = false;
                     if (!empty($tags) && in_array("#nsfw", $tags)) {
-                        $nfsw = true;
-                    }
-                    if (!empty($tags) && in_array("#cw", $tags)) {
-                        $cw = true;
+                        $nsfw = true;
                     }
 
                     // Let's first try getting the thumbnail
@@ -139,9 +138,7 @@ namespace IdnoPlugins\Mastodon {
                                 $params['file'] = $filename;
                                 $params['filename'] = basename($filename);
                                 $params['mime-type'] = $attachment['mime-type'];
-
                                 $response = $this->postMedia($params);
-
                                 $content = json_decode($response['content']);
                                 if (!empty($content->id)) {
                                     $media_ids[] = $content->id;
@@ -179,12 +176,51 @@ namespace IdnoPlugins\Mastodon {
                     \Idno\Core\Idno::site()->logging()->log("Mastodon Media Debug : we haz no Mastodon");
                 }
             });
+
+
+            // Function for articles, RSVPs etc
+            $article_handler = function (\Idno\Core\Event $event) {
+                if ($this->hasMastodon()) {
+                    $eventdata = $event->data();
+                    $object = $eventdata['object'];
+                    $server = $this->getServer();
+                    $status = $object->getTitle();
+                    $permalink = $object->getSyndicationURL();
+                    $permashortlink = \Idno\Core\Idno::site()->config()->indieweb_reference ? $object->getShortURL() : false;
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon PERMALINK: " . var_export($permalink, true));
+
+                    $status = html_entity_decode($status);
+                    
+                    $status = $this->truncate($status, $permalink, $permashortlink);
+                    $statuses = array('status' => $status);
+
+                    $res = $this->postStatus($statuses);
+                    $response = json_decode($res['content']);
+                    $id = $response->id;
+                    if (!empty($response)) {
+                        if (!empty($id)) {
+                            $mastodon_user = $response->account->username . "@" . $server;
+                            //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
+                            $object->setPosseLink('mastodon', $response->url, $mastodon_user, $mastodon_user);
+                            $object->save();
+                        } else {
+                            \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($response, true));
+                            \Idno\Core\Idno::site()->logging()->log("Mastodon tokens: " . var_export(\Idno\Core\Idno::site()->session()->currentUser()->Mastodon, true));
+                        }
+                    }
+                }
+            };
+
+            // Push "articles" and "rsvps" to Twitter
+            \Idno\Core\Idno::site()->addEventHook('post/article/mastodon', $article_handler);
+            \Idno\Core\Idno::site()->addEventHook('post/rsvp/mastodon', $article_handler);
+            \Idno\Core\Idno::site()->addEventHook('post/bookmark/mastodon', $article_handler);
         }
 
         function postStatus($status) {
 
-            // split text if status has content warning #cw
-            $cwstatus = explode("#cw", $status['status'], 2);
+            // split text at || for content warning
+            $cwstatus = explode("||", $status['status'], 2);
             if (!empty($cwstatus[1])) {
                 $status['status'] = $cwstatus[1];
                 $status['spoiler_text'] = $cwstatus[0];
@@ -221,22 +257,34 @@ namespace IdnoPlugins\Mastodon {
         }
 
         /**
-         * @param type $string
-         * @param type $length
-         * @param type $append
+         * 
+         * @param string $string
+         * @param string $permalink
+         * @param string $shortlink
+         * @param int $length
          * @return string
-
-         * */
-        function truncate($string, $length = 100, $append = "&hellip;") {
-            $string = trim($string);
-            $append = html_entity_decode($append);
-            if (strlen($string) > $length) {
-                $string = wordwrap($string, $length);
-                $string = explode("\n", $string, 2);
-                $string = $string[0] . $append;
+         */
+        function truncate($status, $permalink = false, $shortlink = false, $length = 500) {
+            $status = trim($status);
+            if ($permalink) {
+                $permalink = ": " . $permalink;
+                $length = $length - strlen($permalink);
             }
+            if ($shortlink) {
+                $shortlink = " " . $shortlink;
+                $length = $length - strlen($shortlink);
+            }
+            $hellip = mb_convert_encoding('&hellip;', 'UTF-8', 'HTML-ENTITIES');
+            $length = $length - strlen($hellip);
 
-            return $string;
+            if (strlen($status) > $length) {
+                $status = wordwrap($status);
+                $string = explode("\n", $status, 2);
+                $status = $string[0] . $hellip;
+            }
+            $status = $status . $permalink . $shortlink;
+
+            return $status;
         }
 
         function getCredentials($server = false) {

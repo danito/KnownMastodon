@@ -266,6 +266,8 @@ namespace IdnoPlugins\Mastodon {
          */
         function truncate($status, $permalink = false, $shortlink = false, $length = 500) {
             $status = trim($status);
+            //disabling permashortlink for now
+            $shortlink = false;
             if ($permalink) {
                 $permalink = ": " . $permalink;
                 $length = $length - strlen($permalink);

@@ -283,8 +283,9 @@ namespace IdnoPlugins\Mastodon {
                 $status = wordwrap($status);
                 $string = explode("\n", $status, 2);
                 $status = $string[0] . $hellip;
+                $status = $status . $permalink ;
             }
-            $status = $status . $permalink . $shortlink;
+            //$status = $status . $permalink . $shortlink;
 
             return $status;
         }

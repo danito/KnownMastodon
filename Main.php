@@ -28,8 +28,8 @@ namespace IdnoPlugins\Mastodon {
             \Idno\Core\Idno::site()->syndication()->registerService('mastodon', function () {
 
                 return $this->hasMastodon();
-            }, array('article','note', 'image', 'bookmark'));
-            
+            }, array('article', 'note', 'image', 'bookmark'));
+
             //array('note', 'article', 'image', 'media', 'rsvp', 'bookmark', 'like', 'share'));
 
             \Idno\Core\Idno::site()->addEventHook('user/auth/success', function (\Idno\Core\Event $event) {
@@ -48,6 +48,8 @@ namespace IdnoPlugins\Mastodon {
                 $eventdata = $event->data();
                 if ($this->hasMastodon()) {
                     $object = $eventdata['object'];
+                    $object_type = $eventdata['object_type'];
+                    
                     if (!empty($eventdata['syndication_account'])) {
                         $mastodonAPI = $this->connect($eventdata['syndication_account']);
                     } else {
@@ -71,7 +73,7 @@ namespace IdnoPlugins\Mastodon {
                     $permashortlink = \Idno\Core\Idno::site()->config()->indieweb_reference ? $object->getShortURL() : false;
                     $lnklen = strlen($permalink);
                     $stlen = strlen($status);
-                    $status = $this->truncate($status, $permalink, $permashortlink);
+                    $status = $this->truncate($status,$object_type, $permalink, $permashortlink);
 
                     $statuses = array('status' => $status,
                         'sensitive' => $nfsw);
@@ -100,6 +102,7 @@ namespace IdnoPlugins\Mastodon {
                 if ($this->hasMastodon()) {
                     $eventdata = $event->data();
                     $object = $eventdata['object'];
+                    $object_type = $eventdata['object_type'];
                     $mastodonAPI = $this->connect();
                     $server = $this->getServer();
                     $status = $object->getTitle();
@@ -108,9 +111,9 @@ namespace IdnoPlugins\Mastodon {
                     $permalink = $object->getSyndicationURL();
                     // Add link to original post, if IndieWeb references have been requested
                     $permashortlink = \Idno\Core\Idno::site()->config()->indieweb_reference ? $object->getShortURL() : false;
-                    
-                    $status = $this->truncate($status, $permalink, $permashortlink);
-                    
+
+                    $status = $this->truncate($status, $object_type, $permalink, $permashortlink);
+
                     $media_ids = array();
                     $tags = $object->getTags();
                     $tags = array_map('strtolower', $tags);
@@ -140,7 +143,9 @@ namespace IdnoPlugins\Mastodon {
                                 $params['mime-type'] = $attachment['mime-type'];
                                 $response = $this->postMedia($params);
                                 $content = json_decode($response['content']);
+
                                 if (!empty($content->id)) {
+                                    //$media_ids = $content->id;
                                     $media_ids[] = $content->id;
                                 } else {
                                     \Idno\Core\Idno::site()->logging()->log("Mastodon Media Debug : we haz no response from mastodon " . $server);
@@ -149,12 +154,12 @@ namespace IdnoPlugins\Mastodon {
                         }
                     }
                     if (!empty($media_ids)) {
-                        $params = array('status' => $status,
+                        $statuses = array('status' => $status,
                             'media_ids' => $media_ids,
-                            'sensititve' => $nsfw);
+                            'sensitive' => $nsfw);
                         try {
                             $res = $this->postStatus($statuses);
-                            $response = json_decode($res['content']);                            //\Idno\Core\Idno::site()->logging()->log($response);
+                            $response = json_decode($res['content']);
                         } catch (\Exception $e) {
                             \Idno\Core\Idno::site()->logging()->log($e);
                         }
@@ -182,16 +187,17 @@ namespace IdnoPlugins\Mastodon {
             $article_handler = function (\Idno\Core\Event $event) {
                 if ($this->hasMastodon()) {
                     $eventdata = $event->data();
+                    $object_type = $eventdata['object_type'];
                     $object = $eventdata['object'];
                     $server = $this->getServer();
                     $status = $object->getTitle();
                     $permalink = $object->getSyndicationURL();
                     $permashortlink = \Idno\Core\Idno::site()->config()->indieweb_reference ? $object->getShortURL() : false;
-                    \Idno\Core\Idno::site()->logging()->log("Mastodon PERMALINK: " . var_export($permalink, true));
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon PERMASHORT: " . var_export($permashortlink, true));
 
                     $status = html_entity_decode($status);
-                    
-                    $status = $this->truncate($status, $permalink, $permashortlink);
+
+                    $status = $this->truncate($status, $object_type, $permalink, $permashortlink);
                     $statuses = array('status' => $status);
 
                     $res = $this->postStatus($statuses);
@@ -217,14 +223,28 @@ namespace IdnoPlugins\Mastodon {
             \Idno\Core\Idno::site()->addEventHook('post/bookmark/mastodon', $article_handler);
         }
 
+        /**
+         * 
+         * @param array $status
+         * @return object
+         */
         function postStatus($status) {
-
+            //$status['visibility'] = "private";
+            $mID = "";
+            if (!empty($status['media_ids'])) {
+                $media_ids = $status['media_ids'];
+                unset($status['media_ids']);
+                foreach ($media_ids as $id) {
+                    $mID = $mID . "&media_ids[]=".$id;
+                }
+            }
             // split text at || for content warning
             $cwstatus = explode("||", $status['status'], 2);
             if (!empty($cwstatus[1])) {
                 $status['status'] = $cwstatus[1];
                 $status['spoiler_text'] = $cwstatus[0];
             }
+            $status = http_build_query($status).$mID;
 
             $server = $this->getServer();
             $credentials = $this->getCredentials();
@@ -244,6 +264,8 @@ namespace IdnoPlugins\Mastodon {
             $server = $this->getServer();
             $credentials = $this->getCredentials();
             $bearer = $credentials['bearer'];
+            //\Idno\Core\Idno::site()->logging()->log("Mastodon Media Debug : MEDIA  PARAMS " . var_export($params));
+
             $instance = "https://" . $server . '/api/v1/media';
             $result = \Idno\Core\Webservice::post($instance, [
                         'file' => \Idno\Core\WebserviceFile::createFromCurlString("@" . $file . ";filename=" . $filename . ";type=" . $mime)
@@ -264,8 +286,9 @@ namespace IdnoPlugins\Mastodon {
          * @param int $length
          * @return string
          */
-        function truncate($status, $permalink = false, $shortlink = false, $length = 500) {
+        function truncate($status, $format = false, $permalink = false, $shortlink = false, $length = 500) {
             $status = trim($status);
+            $truncated = false;
             //disabling permashortlink for now
             $shortlink = false;
             if ($permalink) {
@@ -276,16 +299,21 @@ namespace IdnoPlugins\Mastodon {
                 $shortlink = " " . $shortlink;
                 $length = $length - strlen($shortlink);
             }
-            $hellip = mb_convert_encoding('&hellip;', 'UTF-8', 'HTML-ENTITIES');
+            $hellip = mb_convert_encoding('&hellip; ', 'UTF-8', 'HTML-ENTITIES');
             $length = $length - strlen($hellip);
 
             if (strlen($status) > $length) {
                 $status = wordwrap($status);
                 $string = explode("\n", $status, 2);
                 $status = $string[0] . $hellip;
-                $status = $status . $permalink ;
+                $status = $status . $permalink;
+                $truncated = true;
             }
-            //$status = $status . $permalink . $shortlink;
+            // $status = $status . $permalink . $shortlink;
+            //add $permalink to bookmark if not truncated
+            if ($format === 'bookmark' && ($truncated == false)) {
+                $status = $status . $permalink;
+            }
 
             return $status;
         }

@@ -314,6 +314,9 @@ namespace IdnoPlugins\Mastodon {
             if ($format === 'bookmark' && ($truncated == false)) {
                 $status = $status . $permalink;
             }
+            if ($format === 'article' && ($truncated == false)) {
+                $status = $status . $permalink;
+            }
 
             return $status;
         }

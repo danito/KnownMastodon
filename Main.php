@@ -8,7 +8,7 @@ namespace IdnoPlugins\Mastodon {
 
         function registerPages() {
             // Auth URL
-            \Idno\Core\Idno::site()->addPageHandler('mastodon/auth', '\IdnoPlugins\Twitter\Pages\Auth');
+            \Idno\Core\Idno::site()->addPageHandler('mastodon/auth', '\IdnoPlugins\Mastodon\Pages\Auth');
             // Deauth URL
             \Idno\Core\Idno::site()->addPageHandler('mastodon/deauth', '\IdnoPlugins\Mastodon\Pages\Deauth');
             // Register the callback URL

@@ -16,3 +16,5 @@ Still on the Todo list:
 Installation: save and rename KnownMastodon to IdnoPlugins/Mastodon
 
 Credits: KnownMastodon is using the Mastodon class from https://github.com/TheCodingCompany/MastodonOAuthPHP
+
+Prerequisite(?): Idno [Twitter Plug–in](https://github.com/Idno/Twitter)

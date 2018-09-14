@@ -18,17 +18,17 @@ namespace IdnoPlugins\Mastodon\Pages {
               } */
             $oauth_url = \Idno\Core\site()->config()->getDisplayURL() . 'mastodon/auth';
             $t = \Idno\Core\site()->template();
-            
+
             $body = $t->__(array('oauth_url' => $oauth_url))->draw('account/mastodon');
             $t->__(array('title' => 'Mastodon', 'body' => $body))->drawPage();
-            
+
         }
 
         function postContent() {
             $this->gatekeeper(); // Logged-in users only
             if (($this->getInput('remove'))) {
                 $user = \Idno\Core\site()->session()->currentUser();
-                $user->mastodon = array();
+                $user->mastodon = array(); // wipes all credentials
                 $user->save();
                // \Idno\Core\site()->config->config['mastodon'] = array();
                // \Idno\Core\site()->config->save();
@@ -40,8 +40,10 @@ namespace IdnoPlugins\Mastodon\Pages {
                 $tmp = explode('@', $this->getInput('username'));
                 $login = $this->getInput('login');
                 $server = $tmp[1];
-                $user->mastodon = array('server' => $server, 'login' => $login, 'username' => $tmp[0], 'bearer' => '');
+                $user->mastodon[$this->getInput('username')] = array('server' => $server, 'login' => $login, 'username' => $tmp[0], 'bearer' => '');
                 $user->save();
+
+                $_SESSION['mastodon_instance'] = $this->getInput('username');
 
                 if (empty(\Idno\Core\Idno::site()->config()->mastodon)) {
                     \Idno\Core\Idno::site()->config()->mastodon = array('mastodon' => true);

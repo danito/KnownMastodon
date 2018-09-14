@@ -21,7 +21,7 @@ namespace IdnoPlugins\Mastodon {
             // Add menu items to account & administration screens
             \Idno\Core\Idno::site()->template()->extendTemplate('admin/menu/items', 'admin/mastodon/menu');
             \Idno\Core\Idno::site()->template()->extendTemplate('account/menu/items', 'account/mastodon/menu');
-            \Idno\Core\Idno::site()->template()->extendTemplate('onboarding/connect/networks', 'onboarding/connect/mastodon');
+            // \Idno\Core\Idno::site()->template()->extendTemplate('onboarding/connect/networks', 'onboarding/connect/mastodon');
         }
 
         function registerEventHooks() {
@@ -36,6 +36,11 @@ namespace IdnoPlugins\Mastodon {
                 if ($this->hasMastodon()) {
                     $mastodon = \Idno\Core\Idno::site()->session()->currentUser()->mastodon;
                     if (is_array($mastodon)) {
+                        foreach($mastodon as $username => $details) {
+                            if (!in_array($username, ['bearer','server','username'])) {
+                                \Idno\Core\Idno::site()->syndication()->registerServiceAccount('mastodon', $username, $username);
+                            }
+                        }
 
                         if (array_key_exists('bearer', $mastodon)) {
                             \Idno\Core\Idno::site()->syndication()->registerServiceAccount('mastodon', $mastodon['username'] . "@" . $mastodon['server'], $mastodon['username'] . "@" . $mastodon['server']);
@@ -49,9 +54,10 @@ namespace IdnoPlugins\Mastodon {
                 if ($this->hasMastodon()) {
                     $object = $eventdata['object'];
                     $object_type = $eventdata['object_type'];
-                    
+
                     if (!empty($eventdata['syndication_account'])) {
-                        $mastodonAPI = $this->connect($eventdata['syndication_account']);
+                        $username = $eventdata['syndication_account'];
+                        $mastodonAPI = $this->connect($username);
                     } else {
                         $mastodonAPI = $this->connect();
                     }
@@ -80,13 +86,19 @@ namespace IdnoPlugins\Mastodon {
 
                     $server = $this->getServer();
 
-                    $res = $this->postStatus($statuses);
+                    if (!empty($eventdata['syndication_account'])) {
+                         $res = $this->postStatus($statuses, $username);
+                    } else {
+                        $res = $this->postStatus($statuses);
+                    }
                     $response = json_decode($res['content']);
                     $id = $response->id;
                     if (!empty($response)) {
                         if (!empty($id)) {
                             $mastodon_user = $response->account->username . "@" . $server;
                             //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
+                            if (!empty($eventdata['syndication_account']))
+                                $mastodon_user = $eventdata['syndication_account'];
                             $object->setPosseLink('mastodon', $response->url, $mastodon_user, $mastodon_user);
                             $object->save();
                         } else {
@@ -97,13 +109,18 @@ namespace IdnoPlugins\Mastodon {
                 }
             });
 
-            // Push "images" to Twitter
+            // Push "images" to a Mastodon instance
             \Idno\Core\Idno::site()->addEventHook('post/image/mastodon', function (\Idno\Core\Event $event) {
                 if ($this->hasMastodon()) {
                     $eventdata = $event->data();
                     $object = $eventdata['object'];
                     $object_type = $eventdata['object_type'];
-                    $mastodonAPI = $this->connect();
+                    if (!empty($eventdata['syndication_account'])) {
+                        $username = $eventdata['syndication_account'];
+                        $mastodonAPI = $this->connect($username);
+                    } else {
+                        $mastodonAPI = $this->connect();
+                    }
                     $server = $this->getServer();
                     $status = $object->getTitle();
                     $status = html_entity_decode($status);
@@ -141,7 +158,7 @@ namespace IdnoPlugins\Mastodon {
                                 $params['file'] = $filename;
                                 $params['filename'] = basename($filename);
                                 $params['mime-type'] = $attachment['mime-type'];
-                                $response = $this->postMedia($params);
+                                $response = $this->postMedia($params, $username);
                                 $content = json_decode($response['content']);
 
                                 if (!empty($content->id)) {
@@ -158,7 +175,7 @@ namespace IdnoPlugins\Mastodon {
                             'media_ids' => $media_ids,
                             'sensitive' => $nsfw);
                         try {
-                            $res = $this->postStatus($statuses);
+                            $res = $this->postStatus($statuses, $username);
                             $response = json_decode($res['content']);
                         } catch (\Exception $e) {
                             \Idno\Core\Idno::site()->logging()->log($e);
@@ -170,6 +187,8 @@ namespace IdnoPlugins\Mastodon {
                         if (!empty($response->id)) {
                             $mastodon_user = $response->account->username . "@" . $server;
                             //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
+                            if (!empty($eventdata['syndication_account']))
+                                $mastodon_user = $eventdata['syndication_account'];
                             $object->setPosseLink('mastodon', $response->url, $mastodon_user, $mastodon_user);
                             $object->save();
                         } else {
@@ -224,11 +243,11 @@ namespace IdnoPlugins\Mastodon {
         }
 
         /**
-         * 
+         *
          * @param array $status
          * @return object
          */
-        function postStatus($status) {
+        function postStatus($status, $username='') {
             //$status['visibility'] = "private";
             $mID = "";
             if (!empty($status['media_ids'])) {
@@ -247,8 +266,9 @@ namespace IdnoPlugins\Mastodon {
             $status = http_build_query($status).$mID;
 
             $server = $this->getServer();
-            $credentials = $this->getCredentials();
+            $credentials = $this->getCredentials($username);
             $bearer = $credentials['bearer'];
+            $server = $credentials['server'];
             $instance = "https://" . $server . '/api/v1/statuses';
             $headers = array('Accept: application/json',
                 'Authorization: Bearer ' . $bearer . "");
@@ -257,13 +277,14 @@ namespace IdnoPlugins\Mastodon {
             return $result;
         }
 
-        function postMedia($params) {
+        function postMedia($params, $username='') {
             $file = $params['file'];
             $filename = $params['filename'];
             $mime = $params['mime-type'];
             $server = $this->getServer();
-            $credentials = $this->getCredentials();
+            $credentials = $this->getCredentials($username);
             $bearer = $credentials['bearer'];
+            $server = $credentials['server'];
             //\Idno\Core\Idno::site()->logging()->log("Mastodon Media Debug : MEDIA  PARAMS " . var_export($params));
 
             $instance = "https://" . $server . '/api/v1/media';
@@ -328,7 +349,13 @@ namespace IdnoPlugins\Mastodon {
             $credentials = array();
             $credentials['client_id'] = \Idno\Core\Idno::site()->config()->mastodon[$server][0]['client_id'];
             $credentials['client_secret'] = \Idno\Core\Idno::site()->config()->mastodon[$server][0]['client_secret'];
-            $credentials['bearer'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['bearer'];
+            if (empty($server)) {
+                $credentials['bearer'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['bearer'];
+                $credentials['server'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
+            } else {
+                $credentials['bearer'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon[$server]['bearer'];
+                $credentials['server'] = \Idno\Core\Idno::site()->session()->currentUser()->mastodon[$server]['server'];
+            }
             return $credentials;
         }
 
@@ -341,10 +368,13 @@ namespace IdnoPlugins\Mastodon {
 
         function connect($server = false) {
             require_once(dirname(__FILE__) . '/autoload.php');
-            // require_once(dirname(__FILE__) . '/external/theCodingCompa  ny/Mastodon.php');
+            // require_once(dirname(__FILE__) . '/external/theCodingCompany/Mastodon.php');
             if (!empty(\Idno\Core\Idno::site()->config()->mastodon)) {
                 $callback = \Idno\Core\Idno::site()->config()->getDisplayURL() . "mastodon/callback/";
-                if (empty($server) && isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {
+                                if (!empty($server) && isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon[$server])) {
+                    $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon[$server]['server'];
+                }
+                else if (empty($server) && isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {
                     $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
                 }
 
@@ -354,7 +384,7 @@ namespace IdnoPlugins\Mastodon {
         }
 
         /**
-         * 
+         *  Mastodon app–creation magic
          */
         function createApp($server = FALSE) {
             $mastodon = $this;

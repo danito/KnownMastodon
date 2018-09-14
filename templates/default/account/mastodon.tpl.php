@@ -50,7 +50,7 @@ $user = Idno::site()->session()->currentUser();
 
                                 <p>
                                     <input type="hidden" name="remove" value="1"/>
-                                    <a href="<?= $authUrl ?>" class="btn btn-primary">Connect to <?= $server ?></button>
+                                    <a href="<?= $authUrl ?>" class="btn btn-primary">Connect to <?= $server ?></a>
 
                                     <?= \Idno\Core\site()->actions()->signForm('/account/mastodon/') ?>
                                 </p>

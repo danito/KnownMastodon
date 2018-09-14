@@ -65,7 +65,6 @@ $user = Idno::site()->session()->currentUser();
         <?php
       }
     } else {
-        $server = $account['server'];
         ?>
         <div class="control-group">
             <div class="controls-config"><?php

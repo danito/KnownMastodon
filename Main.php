@@ -99,7 +99,7 @@ namespace IdnoPlugins\Mastodon {
                             //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
                             if (!empty($eventdata['syndication_account']))
                                 $mastodon_user = $eventdata['syndication_account'];
-                            $object->setPosseLink('mastodon', $response->url, $mastodon_user, $mastodon_user);
+                            $object->setPosseLink('mastodon', $response->url, $mastodon_user, $id, $mastodon_user);
                             $object->save();
                         } else {
                             \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($response, true));
@@ -189,7 +189,7 @@ namespace IdnoPlugins\Mastodon {
                             //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
                             if (!empty($eventdata['syndication_account']))
                                 $mastodon_user = $eventdata['syndication_account'];
-                            $object->setPosseLink('mastodon', $response->url, $mastodon_user, $mastodon_user);
+                            $object->setPosseLink('mastodon', $response->url, $mastodon_user, $response->id, $mastodon_user);
                             $object->save();
                         } else {
                             \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($response, true));

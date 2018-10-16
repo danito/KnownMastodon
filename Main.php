@@ -206,27 +206,43 @@ namespace IdnoPlugins\Mastodon {
             $article_handler = function (\Idno\Core\Event $event) {
                 if ($this->hasMastodon()) {
                     $eventdata = $event->data();
+                    if (!empty($eventdata['syndication_account'])) {
+                        $username = $eventdata['syndication_account'];
+                        \Idno\Core\Idno::site()->logging()->log("Mastodon username: " . $username);
+                        $mastodonAPI = $this->connect($username);
+                    } else {
+                        $mastodonAPI = $this->connect();
+                    }
                     $object_type = $eventdata['object_type'];
                     $object = $eventdata['object'];
-                    $server = $this->getServer();
+                    $server = $this->getServer(); // returning empty
                     $status = $object->getTitle();
                     $permalink = $object->getSyndicationURL();
                     $permashortlink = \Idno\Core\Idno::site()->config()->indieweb_reference ? $object->getShortURL() : false;
                     \Idno\Core\Idno::site()->logging()->log("Mastodon PERMASHORT: " . var_export($permashortlink, true));
+                    // false
 
                     $status = html_entity_decode($status);
 
                     $status = $this->truncate($status, $object_type, $permalink, $permashortlink);
                     $statuses = array('status' => $status);
 
-                    $res = $this->postStatus($statuses);
-                    $response = json_decode($res['content']);
-                    $id = $response->id;
+                    // $res = $this->postStatus($statuses, $username);
+                    // $response = json_decode($res['content']);
+                    // $id = $response->id;
+                        try {
+                            $res = $this->postStatus($statuses, $username);
+                            $response = json_decode($res['content']);
+                        } catch (\Exception $e) {
+                            \Idno\Core\Idno::site()->logging()->log($e);
+                        }
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon posting Response: " . var_export($response, true));
                     if (!empty($response)) {
-                        if (!empty($id)) {
+                        if (!empty($response->id)) {
                             $mastodon_user = $response->account->username . "@" . $server;
                             //$object->setPosseLink('mastodon', $response['url'], $response['id'], $response['account']['username']);
-                            $object->setPosseLink('mastodon', $response->url, $mastodon_user, $mastodon_user);
+                            $object->setPosseLink('mastodon', $response->url, $username, $response->id, $username);
+                            \Idno\Core\Idno::site()->logging()->log("Posted to Mastodon: " . var_export($response->url, true));
                             $object->save();
                         } else {
                             \Idno\Core\Idno::site()->logging()->log("Nothing was posted to Mastodon: " . var_export($response, true));
@@ -346,7 +362,7 @@ namespace IdnoPlugins\Mastodon {
             if (empty($server)) {
                 $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
             }
-            $credentials = array();
+            $credentials = array(); // the following pair: unnecessary?
             $credentials['client_id'] = \Idno\Core\Idno::site()->config()->mastodon[$server][0]['client_id'];
             $credentials['client_secret'] = \Idno\Core\Idno::site()->config()->mastodon[$server][0]['client_secret'];
             if (empty($server)) {
@@ -422,4 +438,4 @@ namespace IdnoPlugins\Mastodon {
     }
 
 }
-    
+

@@ -13,23 +13,24 @@ $user = Idno::site()->session()->currentUser();
     <?php
     if (empty($user->mastodon)) {
         ?>
-        <p>1. enter your Mastodon's user details:</p>
+        <p>1. Enter your Mastodon instance’s user details:</p>
         <form action="<?= $baseURL ?>account/mastodon/" class="form-horizontal" method="post">
             <label for="login">Mastodon login (email address)</label>
-            <input type="text" class="form-control" name="login" id="login" placeholder="your@email.net" value="" />
+            <input type="email" class="form-control" name="login" id="login" placeholder="your@email.net" value="" />
             <label for="username">Mastodon full username</label>
-            <input type="text" class="form-control" name="username" id="username" placeholder="yourNick@mastodon.social" value="" />
+            <input type="email" class="form-control" name="username" id="username" placeholder="yourNick@mastodon.social" value="" />
             <button type="submit" class="btn btn-primary">Save</button>
             <?= \Idno\Core\site()->actions()->signForm('/account/mastodon/') ?>
         </form>
         <?php
-    } elseif (!empty($user->mastodon['username']) && empty($user->mastodon['bearer'])) {
-        $account = $user->mastodon;
+    } elseif(isset($_SESSION['mastodon_instance'])) {
+      if (!empty($user->mastodon[$_SESSION['mastodon_instance']]['username']) && empty($user->mastodon[$_SESSION['mastodon_instance']]['bearer'])) {
+        $account = $user->mastodon[$_SESSION['mastodon_instance']];
         $server = $account['server'];
         $config = \Idno\Core\site()->config->config['mastodon'][$server];
         $authUrl = urldecode(\Idno\Core\site()->config->config['mastodon'][$server][0]['auth_url']);
         ?>
-        <p>Authorize with <?= $server ?></p>
+        <p>2. Authorize with <?= $server ?></p>
         <div class="control-group">
             <div class="controls-config">
                 <div class="row">
@@ -50,7 +51,7 @@ $user = Idno::site()->session()->currentUser();
 
                                 <p>
                                     <input type="hidden" name="remove" value="1"/>
-                                    <a href="<?= $authUrl ?>" class="btn btn-primary">Connect to <?= $server ?></button>
+                                    <a href="<?= $authUrl ?>" class="btn btn-primary">Connect to <?= $server ?></a>
 
                                     <?= \Idno\Core\site()->actions()->signForm('/account/mastodon/') ?>
                                 </p>
@@ -62,32 +63,53 @@ $user = Idno::site()->session()->currentUser();
         </div>
 
         <?php
+      }
     } else {
-        $account = $user->mastodon;
-        $server = $account['server'];
         ?>
         <div class="control-group">
-            <div class="controls-config">
+            <div class="controls-config"><?php
+
+?>
                 <div class="row">
                     <div class="col-md-7">
                         <p>
-                            Your account is currently connected to Mastodon. Public updates, pictures, and posts
-                            that you publish here
-                            can be cross-posted to <?= $server ?>.
+                            Your account is currently connected to these Mastodon instances.
+                            Public updates, pictures, and posts that you publish here can be cross-posted.
                         </p>
 
-                        <div class="social">
                             <form action="<?= \Idno\Core\site()->config()->getDisplayURL() ?>account/mastodon/"
                                   class="form-horizontal" method="post">
+                        <?php
+                           if($accounts = \Idno\Core\site()->syndication()->getServiceAccounts('mastodon')) {
+
+                             foreach($accounts as $account) {
+                               $tmp = explode('@', $account['username']);
+                        ?>
+                        <div class="social">
                                 <p>
-                                    <input type="hidden" name="remove" value="1"/>
+                                    <input type="hidden" name="remove" value="<?= $account['username'] ?>"/>
                                     <button type="submit" class="connect mastodon connected"><i class="fa fa-user-circle"></i>
-                                        Disconnect <?= $server ?>
+                                        Disconnect <?= $tmp[1] ?>
                                     </button>
                                     <?= \Idno\Core\site()->actions()->signForm('/account/mastodon/') ?>
                                 </p>
-                            </form>
                         </div>
+                        <?php
+                             }
+                           }
+        ?>
+                            </form>
+        <p>1. Enter your Mastodon instance’s user details:</p>
+        <form action="<?= $baseURL ?>account/mastodon/" class="form-horizontal" method="post">
+            <label for="login">Mastodon login (email address)</label>
+            <input type="email" class="form-control" name="login" id="login" placeholder="your@email.net" value="" />
+            <label for="username">Mastodon full username</label>
+            <input type="email" class="form-control" name="username" id="username" placeholder="yourNick@mastodon.social" value="" />
+            <button type="submit" class="btn btn-primary">Save</button>
+            <?= \Idno\Core\site()->actions()->signForm('/account/mastodon/') ?>
+        </form>
+        <?php
+                        ?>
                     </div>
                 </div>
             </div>
@@ -97,4 +119,4 @@ $user = Idno::site()->session()->currentUser();
     }
     ?>
 
-</div>    
+</div>

@@ -18,6 +18,7 @@
                 if ($mastodon = \Idno\Core\site()->plugins()->get('Mastodon')) {
                     if ($user = \Idno\Core\site()->session()->currentUser()) {
                         if ($remove = $this->getInput('remove')) {
+                            \Idno\Core\Idno::site()->logging()->log("Mastodon: DEBUG account to delete: " . $remove . " /DEBUG");
                             if (is_array($user->mastodon)) {
                                 if (array_key_exists($remove, $user->mastodon)) {
                                     unset($user->mastodon[$remove]);

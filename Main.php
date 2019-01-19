@@ -151,10 +151,15 @@ namespace IdnoPlugins\Mastodon {
                     }
                     if (!empty($attachments)) {
 
+/*
+    # Mastodon.media_post(media_file, mime_type=None, description=None, focus=None)
+*/
+
                         foreach ($attachments as $attachment) {
                             if ($bytes = \Idno\Entities\File::getFileDataFromAttachment($attachment)) {
                                 $filename = tempnam(sys_get_temp_dir(), 'knownmastodon');
                                 file_put_contents($filename, $bytes);
+                                $params['description'] = $status;
                                 $params['file'] = $filename;
                                 $params['filename'] = basename($filename);
                                 $params['mime-type'] = $attachment['mime-type'];
@@ -264,7 +269,8 @@ namespace IdnoPlugins\Mastodon {
          * @return object
          */
         function postStatus($status, $username='') {
-            //$status['visibility'] = "private";
+            //$status['visibility'] = "private"; // direct
+            $status['visibility'] = "public"; // unlisted
             $mID = "";
             if (!empty($status['media_ids'])) {
                 $media_ids = $status['media_ids'];
@@ -293,7 +299,11 @@ namespace IdnoPlugins\Mastodon {
             return $result;
         }
 
+/*
+    # Mastodon.media_post(media_file, mime_type=None, description=None, focus=None)
+*/
         function postMedia($params, $username='') {
+            $desc = $params['description'];
             $file = $params['file'];
             $filename = $params['filename'];
             $mime = $params['mime-type'];
@@ -305,7 +315,8 @@ namespace IdnoPlugins\Mastodon {
 
             $instance = "https://" . $server . '/api/v1/media';
             $result = \Idno\Core\Webservice::post($instance, [
-                        'file' => \Idno\Core\WebserviceFile::createFromCurlString("@" . $file . ";filename=" . $filename . ";type=" . $mime)
+                        'file' => \Idno\Core\WebserviceFile::createFromCurlString("@" . $file . ";filename=" . $filename . ";type=" . $mime),
+                        'description' => $desc
                             //'file' => $file
                             ], [
                         'Accept: application/json',
@@ -316,7 +327,7 @@ namespace IdnoPlugins\Mastodon {
         }
 
         /**
-         * 
+         *
          * @param string $string
          * @param string $permalink
          * @param string $shortlink

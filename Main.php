@@ -8,15 +8,16 @@ namespace IdnoPlugins\Mastodon {
 
         function registerPages() {
             // Auth URL
-            \Idno\Core\Idno::site()->addPageHandler('mastodon/auth', '\IdnoPlugins\Mastodon\Pages\Auth');
+            //\Idno\Core\Idno::site()->addPageHandler('mastodon/auth', '\IdnoPlugins\Mastodon\Pages\Auth');
+            \Idno\Core\Idno::site()->routes()->addRoute('mastodon/auth', '\IdnoPlugins\Mastodon\Pages\Auth');
             // Deauth URL
-            \Idno\Core\Idno::site()->addPageHandler('mastodon/deauth', '\IdnoPlugins\Mastodon\Pages\Deauth');
+            \Idno\Core\Idno::site()->routes()->addRoute('mastodon/deauth', '\IdnoPlugins\Mastodon\Pages\Deauth');
             // Register the callback URL
-            \Idno\Core\Idno::site()->addPageHandler('mastodon/callback', '\IdnoPlugins\Mastodon\Pages\Callback');
+            \Idno\Core\Idno::site()->routes()->addRoute('mastodon/callback', '\IdnoPlugins\Mastodon\Pages\Callback');
             // Register admin settings
-            \Idno\Core\Idno::site()->addPageHandler('admin/mastodon', '\IdnoPlugins\Mastodon\Pages\Admin');
+            \Idno\Core\Idno::site()->routes()->addRoute('admin/mastodon', '\IdnoPlugins\Mastodon\Pages\Admin');
             // Register settings page
-            \Idno\Core\Idno::site()->addPageHandler('account/mastodon', '\IdnoPlugins\Mastodon\Pages\Account');
+            \Idno\Core\Idno::site()->routes()->addRoute('account/mastodon', '\IdnoPlugins\Mastodon\Pages\Account');
             /** Template extensions */
             // Add menu items to account & administration screens
             \Idno\Core\Idno::site()->template()->extendTemplate('admin/menu/items', 'admin/mastodon/menu');
@@ -32,7 +33,8 @@ namespace IdnoPlugins\Mastodon {
 
             //array('note', 'article', 'image', 'media', 'rsvp', 'bookmark', 'like', 'share'));
 
-            \Idno\Core\Idno::site()->addEventHook('user/auth/success', function (\Idno\Core\Event $event) {
+            //\Idno\Core\Idno::site()->addEventHook('user/auth/success', function (\Idno\Core\Event $event) {
+            \Idno\Core\Idno::site()->events()->addListener('user/auth/success', function (\Idno\Core\Event $event) {
                 if ($this->hasMastodon()) {
                     $mastodon = \Idno\Core\Idno::site()->session()->currentUser()->mastodon;
                     if (is_array($mastodon)) {
@@ -49,7 +51,8 @@ namespace IdnoPlugins\Mastodon {
                 }
             });
 
-            \Idno\Core\Idno::site()->addEventHook('post/note/mastodon', function (\Idno\Core\Event $event) {
+            //\Idno\Core\Idno::site()->addEventHook('post/note/mastodon', function (\Idno\Core\Event $event) {
+            \Idno\Core\Idno::site()->events()->addListener('post/note/mastodon', function (\Idno\Core\Event $event) {
                 $eventdata = $event->data();
                 if ($this->hasMastodon()) {
                     $object = $eventdata['object'];
@@ -110,7 +113,8 @@ namespace IdnoPlugins\Mastodon {
             });
 
             // Push "images" to a Mastodon instance
-            \Idno\Core\Idno::site()->addEventHook('post/image/mastodon', function (\Idno\Core\Event $event) {
+            //\Idno\Core\Idno::site()->addEventHook('post/image/mastodon', function (\Idno\Core\Event $event) {
+            \Idno\Core\Idno::site()->events()->addListener('post/image/mastodon', function (\Idno\Core\Event $event) {
                 if ($this->hasMastodon()) {
                     $eventdata = $event->data();
                     $object = $eventdata['object'];
@@ -258,9 +262,10 @@ namespace IdnoPlugins\Mastodon {
             };
 
             // Push "articles" and "rsvps" to Twitter
-            \Idno\Core\Idno::site()->addEventHook('post/article/mastodon', $article_handler);
-            \Idno\Core\Idno::site()->addEventHook('post/rsvp/mastodon', $article_handler);
-            \Idno\Core\Idno::site()->addEventHook('post/bookmark/mastodon', $article_handler);
+            //\Idno\Core\Idno::site()->addEventHook('post/article/mastodon', $article_handler);
+            \Idno\Core\Idno::site()->events()->addListener('post/article/mastodon', $article_handler);
+            \Idno\Core\Idno::site()->events()->addListener('post/rsvp/mastodon', $article_handler);
+            \Idno\Core\Idno::site()->events()->addListener('post/bookmark/mastodon', $article_handler);
         }
 
         /**

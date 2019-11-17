@@ -60,9 +60,13 @@ namespace IdnoPlugins\Mastodon {
 
                     if (!empty($eventdata['syndication_account'])) {
                         $username = $eventdata['syndication_account'];
+                        $screenName = $eventdata['syndication_account'];
                         $mastodonAPI = $this->connect($username);
                     } else {
                         $mastodonAPI = $this->connect();
+                        $screenName = isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['screen_name'])
+                                    ? \Idno\Core\Idno::site()->session()->currentUser()->mastodon['screen_name']
+                                    : false;
                     }
                     $tags = $object->getTags();
                     $tags = array_map('strtolower', $tags);
@@ -76,6 +80,7 @@ namespace IdnoPlugins\Mastodon {
                     $status = str_replace("\r", '', $status);
 
                     // TODO:  handle inreply-to
+
                     // Permalink will be included if the status message is truncated
                     $permalink = $object->getSyndicationURL();
                     // Add link to original post, if IndieWeb references have been requested
@@ -86,6 +91,23 @@ namespace IdnoPlugins\Mastodon {
 
                     $statuses = array('status' => $status,
                         'sensitive' => $nfsw);
+
+
+                        // Find any Mastodon status IDs in case we need to mark this as a reply to them
+                        $inreplytourls = array_merge((array) $object->inreplyto, (array) $object->syndicatedto);
+                        if ($inreplyto = self::findMastoStatus($inreplytourls)) {
+                            $statuses['in_reply_to_id'] = $inreplyto['status_id'];
+
+                            \Idno\Core\Idno::site()->logging()->log("Mastodon post to reply to: " . var_export($inreplyto, true));
+
+                            // if inreplytoname is not in the status, and is not this user's name, then prepend it to the status
+                            $replyName = $inreplyto['screen_name'];
+                            if ($replyName
+                                    && mb_strtolower($screenName) !== mb_strtolower($replyName)
+                                    && mb_stristr($status, '@'.$replyName) === false) {
+                                $status = '@' . $replyName . ' ' . $status;
+                            }
+                        }
 
                     $server = $this->getServer();
 
@@ -121,9 +143,13 @@ namespace IdnoPlugins\Mastodon {
                     $object_type = $eventdata['object_type'];
                     if (!empty($eventdata['syndication_account'])) {
                         $username = $eventdata['syndication_account'];
+                        $screenName = $eventdata['syndication_account'];
                         $mastodonAPI = $this->connect($username);
                     } else {
                         $mastodonAPI = $this->connect();
+                        $screenName = isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['screen_name'])
+                                    ? \Idno\Core\Idno::site()->session()->currentUser()->mastodon['screen_name']
+                                    : false;
                     }
                     $server = $this->getServer();
                     $status = $object->getTitle();
@@ -183,6 +209,23 @@ namespace IdnoPlugins\Mastodon {
                         $statuses = array('status' => $status,
                             'media_ids' => $media_ids,
                             'sensitive' => $nsfw);
+
+                        // Find any Mastodon status IDs in case we need to mark this as a reply to them
+                        $inreplytourls = array_merge((array) $object->inreplyto, (array) $object->syndicatedto);
+                        if ($inreplyto = self::findMastoStatus($inreplytourls)) {
+                            $statuses['in_reply_to_id'] = $inreplyto['status_id'];
+
+                            \Idno\Core\Idno::site()->logging()->log("Mastodon post to reply to: " . var_export($inreplyto, true));
+
+                            // if inreplytoname is not in the status, and is not this user's name, then prepend it to the status
+                            $replyName = $inreplyto['screen_name'];
+                            if ($replyName
+                                    && mb_strtolower($screenName) !== mb_strtolower($replyName)
+                                    && mb_stristr($status, '@'.$replyName) === false) {
+                                $status = '@' . $replyName . ' ' . $status;
+                            }
+                        }
+
                         try {
                             $res = $this->postStatus($statuses, $username);
                             $response = json_decode($res['content']);
@@ -261,7 +304,7 @@ namespace IdnoPlugins\Mastodon {
                 }
             };
 
-            // Push "articles" and "rsvps" to Twitter
+            // Push "articles" and "rsvps" to Mastodon
             //\Idno\Core\Idno::site()->addEventHook('post/article/mastodon', $article_handler);
             \Idno\Core\Idno::site()->events()->addListener('post/article/mastodon', $article_handler);
             \Idno\Core\Idno::site()->events()->addListener('post/rsvp/mastodon', $article_handler);
@@ -373,6 +416,33 @@ namespace IdnoPlugins\Mastodon {
 
             return $status;
         }
+
+            /**
+             * Search a list of URLs for one that looks like a Toot
+             * permalink and return an array with the Toot's
+             * 'status_id' and 'screen_name'.
+             * @param array urls
+             * @return array or false
+             */
+            private static function findMastoStatus($urls)
+            {
+                foreach ($urls as $url) {
+                  //  if (preg_match('/(www\.|m\.)?twitter.com/i', parse_url($url, PHP_URL_HOST))) {
+                        $path = explode('/', parse_url($url, PHP_URL_PATH));
+
+                            \Idno\Core\Idno::site()->logging()->log("findMastoStatus: \$path: " . var_export($path, true));
+
+                        if (count($path) >= 3) {
+                            $path = array_reverse($path);
+                            return [
+                                'screen_name' => substr($path[1],1) . '@' . parse_url($url, PHP_URL_HOST),
+                                'status_id'   => $path[0],
+                            ];
+                        }
+                  //  }
+                }
+                return false;
+            }
 
         function getCredentials($server = false) {
             if (empty($server)) {

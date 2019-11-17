@@ -279,6 +279,22 @@ namespace IdnoPlugins\Mastodon {
                     $status = $this->truncate($status, $object_type, $permalink, $permashortlink);
                     $statuses = array('status' => $status);
 
+                        // Find any Mastodon status IDs in case we need to mark this as a reply to them
+                        $inreplytourls = array_merge((array) $object->inreplyto, (array) $object->syndicatedto);
+                        if ($inreplyto = self::findMastoStatus($inreplytourls)) {
+                            $statuses['in_reply_to_id'] = $inreplyto['status_id'];
+
+                            \Idno\Core\Idno::site()->logging()->log("Mastodon post to reply to: " . var_export($inreplyto, true));
+
+                            // if inreplytoname is not in the status, and is not this user's name, then prepend it to the status
+                            $replyName = $inreplyto['screen_name'];
+                            if ($replyName
+                                    && mb_strtolower($screenName) !== mb_strtolower($replyName)
+                                    && mb_stristr($status, '@'.$replyName) === false) {
+                                $status = '@' . $replyName . ' ' . $status;
+                            }
+                        }
+
                     // $res = $this->postStatus($statuses, $username);
                     // $response = json_decode($res['content']);
                     // $id = $response->id;

@@ -464,25 +464,25 @@ namespace IdnoPlugins\Mastodon {
                             // find internal reference for a federated post
                             if ($server !== parse_url($url, PHP_URL_HOST)) {
                                 $credentials = $this->getCredentials($username);
-            $bearer = $credentials['bearer'];
-            $server = $credentials['server'];
-            $instance = "https://" . $server . "/api/v2/search?q=";
-            $instance .= $url; // += is not string concatenation
-            $headers = array('Accept: application/json',
-                'Authorization: Bearer ' . $bearer . "");
-                    $result = \Idno\Core\Webservice::get($instance, $status, $headers);
+                                $bearer = $credentials['bearer'];
+                                $server = $credentials['server'];
+                                $instance = "https://" . $server . "/api/v2/search?q=";
+                                $instance .= $url; // += is not string concatenation
+                                $headers = array('Accept: application/json',
+                                    'Authorization: Bearer ' . $bearer . "");
+                                $result = \Idno\Core\Webservice::get($instance, $status, $headers);
 
-                    $response = json_decode($result['content']);
-                    $id = $response->statuses[0]->id;
-                    if (!empty($response)) {
-                        if (!empty($id)) {
-                            $status_id = $id;
-                        } else {
-                            \Idno\Core\Idno::site()->logging()->log("Nothing was found on Mastodon: " . var_export($response, true));
-                        //    \Idno\Core\Idno::site()->logging()->log("Mastodon tokens: " . var_export(\Idno\Core\Idno::site()->session()->currentUser()->Mastodon, true));
-                        }
-                    }
-             }
+                                $response = json_decode($result['content']);
+                                $id = $response->statuses[0]->id;
+                                if (!empty($response)) {
+                                    if (!empty($id)) {
+                                        $status_id = $id;
+                                    } else {
+                                        \Idno\Core\Idno::site()->logging()->log("Nothing was found on Mastodon: " . var_export($response, true));
+                                    //    \Idno\Core\Idno::site()->logging()->log("Mastodon tokens: " . var_export(\Idno\Core\Idno::site()->session()->currentUser()->Mastodon, true));
+                                    }
+                                }
+                            }
 
                             $responses = [
                                 'screen_name' => substr($path[1],1) . '@' . parse_url($url, PHP_URL_HOST),
@@ -531,7 +531,7 @@ namespace IdnoPlugins\Mastodon {
                 else if (empty($server) && isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {
                     $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
                 }
-               return new \theCodingCompany\Mastodon($callback, $server);
+                return new \theCodingCompany\Mastodon($callback, $server);
             }
             return false;
         }

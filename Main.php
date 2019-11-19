@@ -213,13 +213,13 @@ namespace IdnoPlugins\Mastodon {
 
                         // Find any Mastodon status IDs in case we need to mark this as a reply to them
                         $inreplytourls = array_merge((array) $object->inreplyto, (array) $object->syndicatedto);
-                        //if ($inreplyto = self::findMastoStatus($inreplytourlss, $screenName)) {
-                        if ($inreplyto = $this->findMastoStatus($inreplytourlss, $screenName)) {
+                        //if ($inreplyto = self::findMastoStatus($inreplytourls, $screenName)) {
+                        if ($inreplyto = $this->findMastoStatus($inreplytourls, $screenName)) {
                             $statuses['in_reply_to_id'] = $inreplyto['status_id'];
 
                             \Idno\Core\Idno::site()->logging()->log("Mastodon post to reply to: " . var_export($inreplyto, true));
 
-                            // if inreplytoname is not in the status, and is not this user's name, then prepend it to the status
+                            // if inreplytoname is not in the image status, and is not this user's name, then prepend it to the status
                             $replyName = $inreplyto['screen_name'];
                             if ($replyName
                                     && mb_strtolower($screenName) !== mb_strtolower($replyName)
@@ -284,8 +284,8 @@ namespace IdnoPlugins\Mastodon {
 
                         // Find any Mastodon status IDs in case we need to mark this as a reply to them
                         $inreplytourls = array_merge((array) $object->inreplyto, (array) $object->syndicatedto);
-                        //if ($inreplyto = self::findMastoStatus($inreplytourlss, $screenName)) {
-                        if ($inreplyto = $this->findMastoStatus($inreplytourlss, $screenName)) {
+                        //if ($inreplyto = self::findMastoStatus($inreplytourls, $screenName)) {
+                        if ($inreplyto = $this->findMastoStatus($inreplytourls, $screenName)) {
                             $statuses['in_reply_to_id'] = $inreplyto['status_id'];
 
                             \Idno\Core\Idno::site()->logging()->log("Mastodon post to reply to: " . var_export($inreplyto, true));
@@ -463,14 +463,14 @@ namespace IdnoPlugins\Mastodon {
                             $status_id = $path[0];
                             // find internal reference for a federated post
                             if ($server !== parse_url($url, PHP_URL_HOST)) {
-            $credentials = $this->getCredentials($username);
+                                $credentials = $this->getCredentials($username);
             $bearer = $credentials['bearer'];
             $server = $credentials['server'];
             $instance = "https://" . $server . "/api/v2/search?q=";
             $instance .= $url; // += is not string concatenation
             $headers = array('Accept: application/json',
                 'Authorization: Bearer ' . $bearer . "");
-            $result = \Idno\Core\Webservice::get($instance, $status, $headers);
+                    $result = \Idno\Core\Webservice::get($instance, $status, $headers);
 
                     $response = json_decode($result['content']);
                     $id = $response->statuses[0]->id;
@@ -483,7 +483,7 @@ namespace IdnoPlugins\Mastodon {
                         }
                     }
              }
-/**/
+
                             $responses = [
                                 'screen_name' => substr($path[1],1) . '@' . parse_url($url, PHP_URL_HOST),
                                 'status_id'   => $status_id,

@@ -95,17 +95,18 @@ namespace IdnoPlugins\Mastodon {
 
                         // Find any Mastodon status IDs in case we need to mark this as a reply to them
                         $inreplytourls = array_merge((array) $object->inreplyto, (array) $object->syndicatedto);
-                        if ($inreplyto = self::findMastoStatus($inreplytourls)) {
+                        //if ($inreplyto = self::findMastoStatus($inreplytourls, $screenName)) {
+                        if ($inreplyto = $this->findMastoStatus($inreplytourls, $screenName)) {
                             $statuses['in_reply_to_id'] = $inreplyto['status_id'];
 
                             \Idno\Core\Idno::site()->logging()->log("Mastodon post to reply to: " . var_export($inreplyto, true));
 
-                            // if inreplytoname is not in the status, and is not this user's name, then prepend it to the status
+                            // if inreplytoname is not in the note status, and is not this user's name, then prepend it to the status
                             $replyName = $inreplyto['screen_name'];
                             if ($replyName
                                     && mb_strtolower($screenName) !== mb_strtolower($replyName)
                                     && mb_stristr($status, '@'.$replyName) === false) {
-                                $status = '@' . $replyName . ' ' . $status;
+                                $statuses['status'] = '@' . $replyName . ' ' . $status;
                             }
                         }
 
@@ -212,7 +213,8 @@ namespace IdnoPlugins\Mastodon {
 
                         // Find any Mastodon status IDs in case we need to mark this as a reply to them
                         $inreplytourls = array_merge((array) $object->inreplyto, (array) $object->syndicatedto);
-                        if ($inreplyto = self::findMastoStatus($inreplytourls)) {
+                        //if ($inreplyto = self::findMastoStatus($inreplytourlss, $screenName)) {
+                        if ($inreplyto = $this->findMastoStatus($inreplytourlss, $screenName)) {
                             $statuses['in_reply_to_id'] = $inreplyto['status_id'];
 
                             \Idno\Core\Idno::site()->logging()->log("Mastodon post to reply to: " . var_export($inreplyto, true));
@@ -222,17 +224,18 @@ namespace IdnoPlugins\Mastodon {
                             if ($replyName
                                     && mb_strtolower($screenName) !== mb_strtolower($replyName)
                                     && mb_stristr($status, '@'.$replyName) === false) {
-                                $status = '@' . $replyName . ' ' . $status;
+                                $statuses['status'] = '@' . $replyName . ' ' . $status;
                             }
                         }
-
                         try {
                             $res = $this->postStatus($statuses, $username);
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon posting Payload: " . var_export($statuses, true));
                             $response = json_decode($res['content']);
                         } catch (\Exception $e) {
                             \Idno\Core\Idno::site()->logging()->log($e);
                         }
                     }
+                    \Idno\Core\Idno::site()->logging()->log("Mastodon posting Response: " . var_export($response, true));
 
                     @unlink($filename);
                     if (!empty($response)) {
@@ -281,7 +284,8 @@ namespace IdnoPlugins\Mastodon {
 
                         // Find any Mastodon status IDs in case we need to mark this as a reply to them
                         $inreplytourls = array_merge((array) $object->inreplyto, (array) $object->syndicatedto);
-                        if ($inreplyto = self::findMastoStatus($inreplytourls)) {
+                        //if ($inreplyto = self::findMastoStatus($inreplytourlss, $screenName)) {
+                        if ($inreplyto = $this->findMastoStatus($inreplytourlss, $screenName)) {
                             $statuses['in_reply_to_id'] = $inreplyto['status_id'];
 
                             \Idno\Core\Idno::site()->logging()->log("Mastodon post to reply to: " . var_export($inreplyto, true));
@@ -291,7 +295,7 @@ namespace IdnoPlugins\Mastodon {
                             if ($replyName
                                     && mb_strtolower($screenName) !== mb_strtolower($replyName)
                                     && mb_stristr($status, '@'.$replyName) === false) {
-                                $status = '@' . $replyName . ' ' . $status;
+                                $statuses['status'] = '@' . $replyName . ' ' . $status;
                             }
                         }
 
@@ -438,10 +442,16 @@ namespace IdnoPlugins\Mastodon {
              * permalink and return an array with the Toot's
              * 'status_id' and 'screen_name'.
              * @param array urls
+             * @param string username
              * @return array or false
              */
-            private static function findMastoStatus($urls)
+            private function findMastoStatus($urls, $username='')
             {
+                $server = $this->getServer();
+                if (strlen($server) === 0 && strlen($username) > 1) {
+                  $pieces = explode('@', $username);
+                  $server = $pieces[1];
+                }
                 foreach ($urls as $url) {
                   //  if (preg_match('/(www\.|m\.)?twitter.com/i', parse_url($url, PHP_URL_HOST))) {
                         $path = explode('/', parse_url($url, PHP_URL_PATH));
@@ -450,10 +460,36 @@ namespace IdnoPlugins\Mastodon {
 
                         if (count($path) >= 3) {
                             $path = array_reverse($path);
-                            return [
+                            $status_id = $path[0];
+                            // find internal reference for a federated post
+                            if ($server !== parse_url($url, PHP_URL_HOST)) {
+            $credentials = $this->getCredentials($username);
+            $bearer = $credentials['bearer'];
+            $server = $credentials['server'];
+            $instance = "https://" . $server . "/api/v2/search?q=";
+            $instance .= $url; // += is not string concatenation
+            $headers = array('Accept: application/json',
+                'Authorization: Bearer ' . $bearer . "");
+            $result = \Idno\Core\Webservice::get($instance, $status, $headers);
+
+                    $response = json_decode($result['content']);
+                    $id = $response->statuses[0]->id;
+                    if (!empty($response)) {
+                        if (!empty($id)) {
+                            $status_id = $id;
+                        } else {
+                            \Idno\Core\Idno::site()->logging()->log("Nothing was found on Mastodon: " . var_export($response, true));
+                        //    \Idno\Core\Idno::site()->logging()->log("Mastodon tokens: " . var_export(\Idno\Core\Idno::site()->session()->currentUser()->Mastodon, true));
+                        }
+                    }
+             }
+/**/
+                            $responses = [
                                 'screen_name' => substr($path[1],1) . '@' . parse_url($url, PHP_URL_HOST),
-                                'status_id'   => $path[0],
+                                'status_id'   => $status_id,
                             ];
+                            \Idno\Core\Idno::site()->logging()->log("findMastoStatus: \$responses: " . var_export($responses, true));
+                            return $responses;
                         }
                   //  }
                 }
@@ -495,8 +531,7 @@ namespace IdnoPlugins\Mastodon {
                 else if (empty($server) && isset(\Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'])) {
                     $server = \Idno\Core\Idno::site()->session()->currentUser()->mastodon['server'];
                 }
-
-                return new \theCodingCompany\Mastodon($callback, $server);
+               return new \theCodingCompany\Mastodon($callback, $server);
             }
             return false;
         }

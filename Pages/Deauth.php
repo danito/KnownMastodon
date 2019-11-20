@@ -15,8 +15,8 @@
             function getContent()
             {
                 $this->gatekeeper(); // Logged-in users only
-                if ($mastodon = \Idno\Core\site()->plugins()->get('Mastodon')) {
-                    if ($user = \Idno\Core\site()->session()->currentUser()) {
+                if ($mastodon = \Idno\Core\Idno::site()->plugins()->get('Mastodon')) {
+                    if ($user = \Idno\Core\Idno::site()->session()->currentUser()) {
                         if ($remove = $this->getInput('remove')) {
                             \Idno\Core\Idno::site()->logging()->log("Mastodon: DEBUG account to delete: " . $remove . " /DEBUG");
                             if (is_array($user->mastodon)) {
@@ -30,7 +30,7 @@
                             $user->mastodon = false;
                         }
                         $user->save();
-                        \Idno\Core\site()->session()->refreshSessionUser($user);
+                        \Idno\Core\Idno::site()->session()->refreshSessionUser($user);
                         if (!empty($user->link_callback)) {
                             error_log($user->link_callback);
                             $this->forward($user->link_callback); exit;

@@ -27,8 +27,8 @@ $user = Idno::site()->session()->currentUser();
       if (!empty($user->mastodon[$_SESSION['mastodon_instance']]['username']) && empty($user->mastodon[$_SESSION['mastodon_instance']]['bearer'])) {
         $account = $user->mastodon[$_SESSION['mastodon_instance']];
         $server = $account['server'];
-        $config = \Idno\Core\site()->config->config['mastodon'][$server];
-        $authUrl = urldecode(\Idno\Core\site()->config->config['mastodon'][$server][0]['auth_url']);
+        $config = \Idno\Core\Idno::site()->config()->config['mastodon'][$server];
+        $authUrl = urldecode(\Idno\Core\Idno::site()->config()->config['mastodon'][$server][0]['auth_url']);
         ?>
         <p>2. Authorize with <?= $server ?></p>
         <div class="control-group">

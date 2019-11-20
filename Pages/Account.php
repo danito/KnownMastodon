@@ -16,8 +16,8 @@ namespace IdnoPlugins\Mastodon\Pages {
             /* if ($mastodon = \Idno\Core\site()->plugins()->get('Mastodon')) {
               $oauth_url = $mastodon->getAuthURL();
               } */
-            $oauth_url = \Idno\Core\site()->config()->getDisplayURL() . 'mastodon/auth';
-            $t = \Idno\Core\site()->template();
+            $oauth_url = \Idno\Core\Idno::site()->config()->getDisplayURL() . 'mastodon/auth';
+            $t = \Idno\Core\Idno::site()->template();
 
             $body = $t->__(array('oauth_url' => $oauth_url))->draw('account/mastodon');
             $t->__(array('title' => 'Mastodon', 'body' => $body))->drawPage();
@@ -27,16 +27,16 @@ namespace IdnoPlugins\Mastodon\Pages {
         function postContent() {
             $this->gatekeeper(); // Logged-in users only
             if (($this->getInput('remove'))) {
-                $user = \Idno\Core\site()->session()->currentUser();
+                $user = \Idno\Core\Idno::site()->session()->currentUser();
                 $user->mastodon = array(); // wipes all credentials
                 $user->save();
                // \Idno\Core\site()->config->config['mastodon'] = array();
                // \Idno\Core\site()->config->save();
-                \Idno\Core\site()->session()->addMessage('Your Mastodon settings have been removed from your account.');
-                $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'account/mastodon/');
+                \Idno\Core\Idno::site()->session()->addMessage('Your Mastodon settings have been removed from your account.');
+                $this->forward(\Idno\Core\Idno::site()->config()->getDisplayURL() . 'account/mastodon/');
             }
             if ($this->getInput('login') && $this->getInput('username')) {
-                $user = \Idno\Core\site()->session()->currentUser();
+                $user = \Idno\Core\Idno::site()->session()->currentUser();
                 $tmp = explode('@', $this->getInput('username'));
                 $login = $this->getInput('login');
                 $server = $tmp[1];
@@ -47,11 +47,11 @@ namespace IdnoPlugins\Mastodon\Pages {
 
                 if (empty(\Idno\Core\Idno::site()->config()->mastodon)) {
                     \Idno\Core\Idno::site()->config()->mastodon = array('mastodon' => true);
-                    \Idno\Core\site()->config->save();
+                    \Idno\Core\Idno::site()->config()->save();
                 }
                 if (empty(\Idno\Core\Idno::site()->config()->mastodon[$server])) {
 
-                    $mastodon = \Idno\Core\site()->plugins()->get('Mastodon');
+                    $mastodon = \Idno\Core\Idno::site()->plugins()->get('Mastodon');
                     $mastodonApi = $mastodon->connect($server);
                     $name = \Idno\Core\Idno::site()->config()->getTitle();
                     $website_url = \Idno\Core\Idno::site()->config()->getDisplayURL();
@@ -60,7 +60,7 @@ namespace IdnoPlugins\Mastodon\Pages {
                     $authUrl = $mastodonApi->getAuthUrl();
                     $clientID = $appConfig['client_id'];
                     $clientSecret = $appConfig['client_secret'];
-                    $knownuser = \Idno\Core\site()->session()->currentUser()->getHandle();
+                    $knownuser = \Idno\Core\Idno::site()->session()->currentUser()->getHandle();
                     $serverConfig = array('name' => $server,
                         'user' => $knownuser,
                         'issued_at' => time(),
@@ -68,8 +68,8 @@ namespace IdnoPlugins\Mastodon\Pages {
                         'client_secret' => $clientSecret,
                         'auth_url' => $authUrl);
 
-                    \Idno\Core\site()->config->config['mastodon'][$server] = array($serverConfig);
-                    \Idno\Core\site()->config->save();
+                    \Idno\Core\Idno::site()->config()->config['mastodon'][$server] = array($serverConfig);
+                    \Idno\Core\Idno::site()->config()->save();
 
                     } else {
 
@@ -77,7 +77,7 @@ namespace IdnoPlugins\Mastodon\Pages {
             } else {
                 \Idno\Core\Idno::site()->logging()->log("Mastodon debug : account no input : ");
             }
-            $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'account/mastodon/');
+            $this->forward(\Idno\Core\Idno::site()->config()->getDisplayURL() . 'account/mastodon/');
         }
 
     }

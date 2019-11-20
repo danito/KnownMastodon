@@ -20,7 +20,7 @@ $user = Idno::site()->session()->currentUser();
             <label for="username">Mastodon full username</label>
             <input type="email" class="form-control" name="username" id="username" placeholder="yourNick@mastodon.social" value="" />
             <button type="submit" class="btn btn-primary">Save</button>
-            <?= \Idno\Core\site()->actions()->signForm('/account/mastodon/') ?>
+            <?= \Idno\Core\Idno::site()->actions()->signForm('/account/mastodon/') ?>
         </form>
         <?php
     } elseif(isset($_SESSION['mastodon_instance'])) {
@@ -53,7 +53,7 @@ $user = Idno::site()->session()->currentUser();
                                     <input type="hidden" name="remove" value="1"/>
                                     <a href="<?= $authUrl ?>" class="btn btn-primary">Connect to <?= $server ?></a>
 
-                                    <?= \Idno\Core\site()->actions()->signForm('/account/mastodon/') ?>
+                                    <?= \Idno\Core\Idno::site()->actions()->signForm('/account/mastodon/') ?>
                                 </p>
                             </form>
                         </div>
@@ -77,10 +77,10 @@ $user = Idno::site()->session()->currentUser();
                             Public updates, pictures, and posts that you publish here can be cross-posted.
                         </p>
 
-                            <form action="<?= \Idno\Core\site()->config()->getDisplayURL() ?>account/mastodon/"
+                            <form action="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() ?>account/mastodon/"
                                   class="form-horizontal" method="post">
                         <?php
-                           if($accounts = \Idno\Core\site()->syndication()->getServiceAccounts('mastodon')) {
+                           if($accounts = \Idno\Core\Idno::site()->syndication()->getServiceAccounts('mastodon')) {
 
                              foreach($accounts as $account) {
                                $tmp = explode('@', $account['username']);
@@ -91,7 +91,7 @@ $user = Idno::site()->session()->currentUser();
                                     <button type="submit" class="connect mastodon connected"><i class="fa fa-user-circle"></i>
                                         Disconnect <?= $tmp[1] ?>
                                     </button>
-                                    <?= \Idno\Core\site()->actions()->signForm('/account/mastodon/') ?>
+                                    <?= \Idno\Core\Idno::site()->actions()->signForm('/account/mastodon/') ?>
                                 </p>
                         </div>
                         <?php
@@ -106,7 +106,7 @@ $user = Idno::site()->session()->currentUser();
             <label for="username">Mastodon full username</label>
             <input type="email" class="form-control" name="username" id="username" placeholder="yourNick@mastodon.social" value="" />
             <button type="submit" class="btn btn-primary">Save</button>
-            <?= \Idno\Core\site()->actions()->signForm('/account/mastodon/') ?>
+            <?= \Idno\Core\Idno::site()->actions()->signForm('/account/mastodon/') ?>
         </form>
         <?php
                         ?>

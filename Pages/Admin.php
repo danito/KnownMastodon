@@ -27,10 +27,10 @@ namespace IdnoPlugins\Mastodon\Pages {
             $this->adminGatekeeper(); // Admins only
             if (($this->getInput('remove'))) {
                 $remove = $this->getInput('remove');
-/*
+
                 unset(\Idno\Core\Idno::site()->config()->config['mastodon'][$remove]);
                 \Idno\Core\Idno::site()->config()->save();
-*/
+
                 \Idno\Core\Idno::site()->session()->addMessage($remove . ' instance settings have been removed from your site.');
                 $this->forward(\Idno\Core\Idno::site()->config()->getDisplayURL() . 'admin/mastodon/');
             }

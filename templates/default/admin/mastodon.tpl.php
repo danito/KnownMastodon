@@ -24,10 +24,16 @@
                 if (!empty($details[0]['name'])) {
                     $name = $details[0]["name"];
                     ?>
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            Server : <a href="https://<?= $name ?>" target="_blank"><?= $name ?></a>
+                    <form action=<?= \Idno\Core\Idno::site()->config()->getDisplayURL() ?>admin/mastodon/ method=post >
+                    <div class="col-md-9 panel panel-default">
+                        <div class="panel-heading row">
+                            <div class="col-md-9">Server : <a href="https://<?= $name ?>" target="_blank"><?= $name ?></a></div>
+                            <div class="col-md-1 col-md-offset-1">
+                              <input class="btn btn-cancel plugin-button" name="_remove" type="submit" value="Delete">
+                            </div>
+                            <input type="hidden" name="remove" value="<?= $name ?>"/>
                         </div>
+                        <?= \Idno\Core\Idno::site()->actions()->signForm('/admin/mastodon/') ?>
                         <div class="panel-body" >
                             <p>
                                 Authorized <strong><?= strftime('%Y-%m-%d', $details[0]['issued_at']) ?></strong>
@@ -39,6 +45,7 @@
 
                         </div>
                     </div>
+                    </form>
                     <?php
                 }
             }

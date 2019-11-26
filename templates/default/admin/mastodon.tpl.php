@@ -49,6 +49,17 @@
                     <?php
                 }
             }
+
+?>
+<div class="row">
+    <div class="col-md-10 col-md-offset-1">
+    
+    <?php echo $this->__([])->draw('forms/usersearch'); ?>
+    
+    </div>
+</div>
+<?php
+
         } else {
             ?>
             <div class="panel panel-default">

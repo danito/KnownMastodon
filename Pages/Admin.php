@@ -11,6 +11,9 @@
 
 namespace IdnoPlugins\Mastodon\Pages {
 
+    use Idno\Entities\RemoteUser;
+    use Idno\Entities\User;
+
     /**
      * Default class to serve the homepage
      */
@@ -18,8 +21,15 @@ namespace IdnoPlugins\Mastodon\Pages {
 
         function getContent() {
             $this->adminGatekeeper(); // Admins only
+
+            $offset = $this->getInput('offset', 0);
+            $limit = $this->getInput('limit', 100);
+
+            $users = User::getFromX(["Idno\\Entities\\User", "Idno\\Entities\\RemoteUser"], [], [], $limit, $offset);
+            $count = User::countFromX(["Idno\\Entities\\User", "Idno\\Entities\\RemoteUser"]);
+
             $t = \Idno\Core\Idno::site()->template();
-            $body = $t->draw('admin/mastodon');
+            $body = $t->__(array('items' => $users, 'count' => $count, 'items_per_page' => $limit))->draw('admin/mastodon');
             $t->__(array('title' => 'Mastodon', 'body' => $body))->drawPage();
         }
 

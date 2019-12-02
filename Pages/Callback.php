@@ -14,13 +14,13 @@ namespace IdnoPlugins\Mastodon\Pages {
         function get($params = array()) {
             $this->gatekeeper(); // Logged-in users only
             if ($token = $this->getInput('code')) {
-                $user = \Idno\Core\site()->session()->currentUser();
+                $user = \Idno\Core\Idno::site()->session()->currentUser();
                 $_server = $_SESSION['mastodon_instance'];
                 unset($_SESSION['mastodon_instance']);
                 $mastodon = $user->mastodon[$_server];
                 $server = $mastodon['server'];
 
-                if ($mastodon = \Idno\Core\site()->plugins()->get('Mastodon')) {
+                if ($mastodon = \Idno\Core\Idno::site()->plugins()->get('Mastodon')) {
                     $mastodonAPI = $mastodon->connect($server);
                     $credentials = $mastodon->getCredentials($server);
                     $mastodonAPI->setCredentials($credentials);
@@ -32,9 +32,9 @@ namespace IdnoPlugins\Mastodon\Pages {
 
                     if (!empty($_SESSION['onboarding_passthrough'])) {
                         unset($_SESSION['onboarding_passthrough']);
-                        $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'begin/connect-forwarder');
+                        $this->forward(\Idno\Core\Idno::site()->config()->getDisplayURL() . 'begin/connect-forwarder');
                     }
-                    $this->forward(\Idno\Core\site()->config()->getDisplayURL() . 'account/mastodon');
+                    $this->forward(\Idno\Core\Idno::site()->config()->getDisplayURL() . 'account/mastodon');
                 } else {
                     \Idno\Core\Idno::site()->logging()->log("Mastodon: DEBUG callback  " . $server . " " . var_export($mastodon, true) . " /DEBUG");
                 }

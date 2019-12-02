@@ -18,7 +18,7 @@ namespace IdnoPlugins\Mastodon\Pages {
 
         function getContent() {
             $this->adminGatekeeper(); // Admins only
-            $t = \Idno\Core\site()->template();
+            $t = \Idno\Core\Idno::site()->template();
             $body = $t->draw('admin/mastodon');
             $t->__(array('title' => 'Mastodon', 'body' => $body))->drawPage();
         }

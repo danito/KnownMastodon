@@ -14,11 +14,11 @@
 <div class="row">
     <div class="col-md-10 col-md-offset-1">
         <?php
-        if (!empty(\Idno\Core\site()->config()->mastodon)) {
+        if (!empty(\Idno\Core\Idno::site()->config()->mastodon)) {
             ?>
             <p> Following Mastodon servers are configured: </p>
             <?php
-            $servers = \Idno\Core\site()->config()->mastodon;
+            $servers = \Idno\Core\Idno::site()->config()->mastodon;
             foreach ($servers as $servername => $details) {
                 \Idno\Core\Idno::site()->logging()->log("Mastodon (admin details): " . var_export($details, true));
                 if (!empty($details[0]['name'])) {

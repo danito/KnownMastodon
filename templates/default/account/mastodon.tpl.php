@@ -77,15 +77,14 @@ $user = Idno::site()->session()->currentUser();
                             Public updates, pictures, and posts that you publish here can be cross-posted.
                         </p>
 
-                            <form action="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() ?>account/mastodon/"
-                                  class="form-horizontal" method="post">
                         <?php
                            if($accounts = \Idno\Core\Idno::site()->syndication()->getServiceAccounts('mastodon')) {
-
                              foreach($accounts as $account) {
                                $tmp = explode('@', $account['username']);
                         ?>
-                        <div class="social">
+                            <form action="<?= \Idno\Core\Idno::site()->config()->getDisplayURL() ?>account/mastodon/"
+                                  class="form-horizontal" method="post">
+                              <div class="social">
                                 <p>
                                     <input type="hidden" name="remove" value="<?= $account['username'] ?>"/>
                                     <button type="submit" class="connect mastodon connected"><i class="fa fa-user-circle"></i>
@@ -93,12 +92,12 @@ $user = Idno::site()->session()->currentUser();
                                     </button>
                                     <?= \Idno\Core\Idno::site()->actions()->signForm('/account/mastodon/') ?>
                                 </p>
-                        </div>
+                              </div>
+                            </form>
                         <?php
                              }
                            }
         ?>
-                            </form>
         <p>1. Enter your Mastodon instance’s user details:</p>
         <form action="<?= $baseURL ?>account/mastodon/" class="form-horizontal" method="post">
             <label for="login">Mastodon login (email address)</label>

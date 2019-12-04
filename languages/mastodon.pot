@@ -55,7 +55,7 @@ msgid "2. Authorize with %s"
 msgstr ""
 
 #: ./templates/default/account/mastodon.tpl.php:39
-msgid "Your account is currently connected to Mastodon. Public updates, pictures, and posts that you publish here can be cross-posted to %s."
+msgid "When your account is connected to Mastodon. Public updates, pictures, and posts that you publish here can be cross-posted to %s."
 msgstr ""
 
 #: ./templates/default/account/mastodon.tpl.php:54
@@ -87,6 +87,10 @@ msgstr ""
 msgid "Following Mastodon servers are configured:"
 msgstr ""
 
+#: ./templates/default/admin/mastodon.tpl.php:23
+msgid "Mastodon (admin details): %s"
+msgstr ""
+
 #: ./templates/default/admin/mastodon.tpl.php:30
 msgid "Server : %s"
 msgstr ""
@@ -115,3 +119,38 @@ msgstr ""
 msgid "ID: n/a"
 msgstr ""
 
+#: ./templates/default/forms/usersmastodon.tpl.php:24
+msgid "Search by name, email address, blood group, or username"
+msgstr ""
+
+#: ./templates/default/forms/usersmastodon.tpl.php:79
+msgid "By creation date"
+msgstr ""
+
+#: ./templates/default/forms/usersmastodon.tpl.php:80
+msgid "By name"
+msgstr ""
+
+#: ./templates/default/forms/usersmastodon.tpl.php:89
+msgid "Ascending"
+msgstr ""
+
+#: ./templates/default/forms/usersmastodon.tpl.php:90
+msgid "Descending"
+msgstr ""
+
+#: ./templates/default/forms/usersmastodon.tpl.php:102
+msgid "Prev"
+msgstr ""
+
+#: ./templates/default/forms/usersmastodon.tpl.php:103
+msgid "Next"
+msgstr ""
+
+#: ./templates/default/forms/components/usersmastodon/user.tpl.php:45
+msgid "Last update posted"
+msgstr ""
+
+#: ./templates/default/forms/components/usersmastodon/user.tpl.php:55
+msgid "Never"
+msgstr ""

@@ -35,8 +35,7 @@ namespace IdnoPlugins\Mastodon\Pages {
                 $instance = explode('@', $rm);
                // \Idno\Core\site()->config->config['mastodon'] = array();
                // \Idno\Core\site()->config->save();
-//                \Idno\Core\Idno::site()->session()->addMessage('Your Mastodon settings have been removed from your account.');
-                \Idno\Core\Idno::site()->session()->addMessage($instance[1] . ' instance settings have been removed from your account.');
+                \Idno\Core\Idno::site()->session()->addMessage(\Idno\Core\Idno::site()->language()->_('%s instance settings have been removed from your account.', [$instance[1]]));
                 $this->forward(\Idno\Core\Idno::site()->config()->getDisplayURL() . 'account/mastodon/');
             }
             if ($this->getInput('login') && $this->getInput('username')) {

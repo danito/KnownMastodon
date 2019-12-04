@@ -1,0 +1,7 @@
+# ./Pages/Account.php:38
+msgid "%s instance settings have been removed from your account."
+msgstr ""
+
+# ./Pages/Admin.php:44
+msgid "%s instance settings have been removed from your site."
+msgstr ""

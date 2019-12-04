@@ -7,29 +7,17 @@ msgid "%s instance settings have been removed from your site."
 msgstr ""
 
 #: ./templates/default/account/mastodon.tpl.php:16
-msgid "1. Enter your Mastodon instance’s user details:"
-msgstr ""
-
 #: ./templates/default/account/mastodon.tpl.php:101
 msgid "1. Enter your Mastodon instance’s user details:"
 msgstr ""
 
 #: ./templates/default/account/mastodon.tpl.php:18
-msgid "Mastodon login (email address)"
-msgstr ""
-
 #: ./templates/default/account/mastodon.tpl.php:103
 msgid "Mastodon login (email address)"
 msgstr ""
 
 #: ./templates/default/account/mastodon.tpl.php:20
-msgid "Mastodon full username"
-msgstr ""
-
 #: ./templates/default/account/mastodon.tpl.php:48
-msgid "Mastodon full username"
-msgstr ""
-
 #: ./templates/default/account/mastodon.tpl.php:105
 msgid "Mastodon full username"
 msgstr ""
@@ -39,13 +27,7 @@ msgstr ""
 #msgstr ""
 
 #: ./templates/default/account/mastodon.tpl.php:22
-msgid "Save"
-msgstr ""
-
 #: ./templates/default/account/mastodon.tpl.php:50
-msgid "Save"
-msgstr ""
-
 #: ./templates/default/account/mastodon.tpl.php:107
 msgid "Save"
 msgstr ""

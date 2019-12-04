@@ -108,6 +108,8 @@ namespace IdnoPlugins\Mastodon {
                                     && mb_stristr($status, '@'.$replyName) === false) {
                                 $statuses['status'] = '@' . $replyName . ' ' . $status;
                             }
+                        } else {
+                            \Idno\Core\Idno::site()->logging()->log("findMastoStatus returned: false");
                         }
 
                     $server = $this->getServer();
@@ -454,6 +456,10 @@ namespace IdnoPlugins\Mastodon {
                 }
                 foreach ($urls as $url) {
                   //  if (preg_match('/(www\.|m\.)?twitter.com/i', parse_url($url, PHP_URL_HOST))) {
+                    if ( !strstr($url, '@') ) {
+                        return false;
+                    }
+
                         $path = explode('/', parse_url($url, PHP_URL_PATH));
 
                             \Idno\Core\Idno::site()->logging()->log("findMastoStatus: \$path: " . var_export($path, true));

@@ -74,3 +74,44 @@ msgstr ""
 #: ./templates/default/account/mastodon.tpl.php:117
 msgid "Mastodon debug : %s"
 msgstr ""
+
+#: ./templates/default/admin/mastodon.tpl.php:4
+msgid "Syndicate to Mastodon"
+msgstr ""
+
+#: ./templates/default/admin/mastodon.tpl.php:10
+msgid "Your Mastodon plugin is installed. For configuration check your account settings."
+msgstr ""
+
+#: ./templates/default/admin/mastodon.tpl.php:19
+msgid "Following Mastodon servers are configured:"
+msgstr ""
+
+#: ./templates/default/admin/mastodon.tpl.php:30
+msgid "Server : %s"
+msgstr ""
+
+#: ./templates/default/admin/mastodon.tpl.php:32
+msgid "Delete"
+msgstr ""
+
+#: ./templates/default/admin/mastodon.tpl.php:39
+msgid "Authorized <strong>%s</strong> by <strong>%s</strong>."
+msgstr ""
+
+#: ./templates/default/admin/mastodon.tpl.php:43
+msgid "ID: %s&hellip;"
+msgstr ""
+
+#: ./templates/default/admin/mastodon.tpl.php:67
+msgid "Server : none"
+msgstr ""
+
+#: ./templates/default/admin/mastodon.tpl.php:71
+msgid "Authorized <strong>n/a</strong> by <strong>n/a</strong>."
+msgstr ""
+
+#: ./templates/default/admin/mastodon.tpl.php:75
+msgid "ID: n/a"
+msgstr ""
+

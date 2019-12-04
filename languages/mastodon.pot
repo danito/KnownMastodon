@@ -5,3 +5,72 @@ msgstr ""
 # ./Pages/Admin.php:44
 msgid "%s instance settings have been removed from your site."
 msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:16
+msgid "1. Enter your Mastodon instance’s user details:"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:101
+msgid "1. Enter your Mastodon instance’s user details:"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:18
+msgid "Mastodon login (email address)"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:103
+msgid "Mastodon login (email address)"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:20
+msgid "Mastodon full username"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:48
+msgid "Mastodon full username"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:105
+msgid "Mastodon full username"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:22
+#msgid "Mastodon server name"
+#msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:22
+msgid "Save"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:50
+msgid "Save"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:107
+msgid "Save"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:33
+msgid "2. Authorize with %s"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:39
+msgid "Your account is currently connected to Mastodon. Public updates, pictures, and posts that you publish here can be cross-posted to %s."
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:54
+msgid "Connect to %s"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:76
+msgid "Your account is currently connected to these Mastodon instances. Public updates, pictures, and posts that you publish here can be cross-posted."
+msgstr ""
+
+
+#: ./templates/default/account/mastodon.tpl.php:91
+msgid "Disconnect %s"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:117
+msgid "Mastodon debug : %s"
+msgstr ""

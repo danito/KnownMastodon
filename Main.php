@@ -6,6 +6,15 @@ namespace IdnoPlugins\Mastodon {
 
         //use \Idno\Core
 
+        function registerTranslations()
+        {
+            \Idno\Core\Idno::site()->language()->register(
+               new \Idno\Core\GetTextTranslation(
+                   'mastodon', dirname(__FILE__) . '/languages/'
+               )
+            );
+        }
+
         function registerPages() {
             // Auth URL
             //\Idno\Core\Idno::site()->addPageHandler('mastodon/auth', '\IdnoPlugins\Mastodon\Pages\Auth');

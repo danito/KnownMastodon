@@ -54,6 +54,11 @@ $user = Idno::site()->session()->currentUser();
                                     <?= \Idno\Core\Idno::site()->actions()->signForm('/account/mastodon/') ?>
                                 </p>
                             </form>
+                            <form action=. class="form-horizontal" method=post>
+                                <input type="hidden" name="remove" value="<?= $account['username'] . '@' . $server ?>"/>
+                                <button value="cancel" type="submit" name="cancel" class="btn btn-cancel"><?= \Idno\Core\Idno::site()->language()->_('Cancel') ?></button>
+                                <?= \Idno\Core\Idno::site()->actions()->signForm('/account/mastodon/') ?>
+                            </form>
                         </div>
                     </div>
                 </div>

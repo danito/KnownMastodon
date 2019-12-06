@@ -49,6 +49,17 @@
                     <?php
                 }
             }
+
+?>
+<div class="row">
+    <div class="col-md-9 col-md-offset-0">
+
+    <?php echo $this->__([])->draw('forms/usersmastodon'); ?>
+
+    </div>
+</div>
+<?php
+
         } else {
             ?>
             <div class="panel panel-default">

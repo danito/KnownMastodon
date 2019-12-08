@@ -41,7 +41,7 @@ namespace IdnoPlugins\Mastodon\Pages {
                 unset(\Idno\Core\Idno::site()->config()->config['mastodon'][$remove]);
                 \Idno\Core\Idno::site()->config()->save();
 
-                \Idno\Core\Idno::site()->session()->addMessage($remove . ' instance settings have been removed from your site.');
+                \Idno\Core\Idno::site()->session()->addMessage(\Idno\Core\Idno::site()->language()->_('%s instance settings have been removed from your site.', [$remove]));
                 $this->forward(\Idno\Core\Idno::site()->config()->getDisplayURL() . 'admin/mastodon/');
             }
         }

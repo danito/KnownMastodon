@@ -1,1 +1,1 @@
-<li <?php if ($_SERVER['REQUEST_URI'] == '/admin/mastodon/') echo 'class="active"'; ?>><a href="<?=\Idno\Core\Idno::site()->config()->getDisplayURL()?>admin/mastodon/">Mastodon</a></li>
+<li <?php if (strstr($_SERVER['REQUEST_URI'], '/admin/mastodon')) echo 'class="active"'; ?> role="presentation"><a href="<?=\Idno\Core\Idno::site()->config()->getDisplayURL()?>admin/mastodon/">Mastodon</a></li>

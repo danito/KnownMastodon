@@ -9,11 +9,12 @@ Syndicate your posts to Mastodon instances
 Admin page shows all Mastodon servers connected by the users.
 
 - Multiple servers possible; something breaks at three (but who needs that much syndication?)
+- Selective deletion of Mastodon accounts.
+- Delete instance from server page.
 
 Still on the Todo list:
 
-- Selective deletion of Mastodon accounts.
-- Delete instance from server page.
+- Localisation other than English
 
 Installation: save and rename KnownMastodon to IdnoPlugins/Mastodon
 

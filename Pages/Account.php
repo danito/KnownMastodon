@@ -26,6 +26,16 @@ namespace IdnoPlugins\Mastodon\Pages {
 
         function postContent() {
             $this->gatekeeper(); // Logged-in users only
+            if (($this->getInput('cancel'))) {
+                unset($_SESSION['mastodon_instance']);
+                $rm = $this->getInput('remove');
+                $user = \Idno\Core\Idno::site()->session()->currentUser();
+                unset($user->mastodon[$rm]); // wipes specific credentials
+                $user->save();
+                $instance = explode('@', $rm);
+                \Idno\Core\Idno::site()->session()->addMessage(\Idno\Core\Idno::site()->language()->_('%s instance settings have been removed from your account.', [$instance[1]]));
+                $this->forward(\Idno\Core\Idno::site()->config()->getDisplayURL() . 'account/mastodon/');
+            }
             if (($this->getInput('remove'))) {
                 $rm = $this->getInput('remove');
                 $user = \Idno\Core\Idno::site()->session()->currentUser();

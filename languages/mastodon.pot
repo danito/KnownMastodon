@@ -7,18 +7,18 @@ msgid "%s instance settings have been removed from your site."
 msgstr ""
 
 #: ./templates/default/account/mastodon.tpl.php:16
-#: ./templates/default/account/mastodon.tpl.php:101
+#: ./templates/default/account/mastodon.tpl.php:103
 msgid "1. Enter your Mastodon instance’s user details:"
 msgstr ""
 
 #: ./templates/default/account/mastodon.tpl.php:18
-#: ./templates/default/account/mastodon.tpl.php:103
+#: ./templates/default/account/mastodon.tpl.php:105
 msgid "Mastodon login (email address)"
 msgstr ""
 
 #: ./templates/default/account/mastodon.tpl.php:20
-#: ./templates/default/account/mastodon.tpl.php:48
-#: ./templates/default/account/mastodon.tpl.php:105
+#: ./templates/default/account/mastodon.tpl.php:46
+#: ./templates/default/account/mastodon.tpl.php:107
 msgid "Mastodon full username"
 msgstr ""
 
@@ -27,8 +27,8 @@ msgstr ""
 #msgstr ""
 
 #: ./templates/default/account/mastodon.tpl.php:22
-#: ./templates/default/account/mastodon.tpl.php:50
-#: ./templates/default/account/mastodon.tpl.php:107
+#: ./templates/default/account/mastodon.tpl.php:48
+#: ./templates/default/account/mastodon.tpl.php:109
 msgid "Save"
 msgstr ""
 
@@ -40,20 +40,23 @@ msgstr ""
 msgid "When your account is connected to Mastodon. Public updates, pictures, and posts that you publish here can be cross-posted to %s."
 msgstr ""
 
-#: ./templates/default/account/mastodon.tpl.php:54
+#: ./templates/default/account/mastodon.tpl.php:52
 msgid "Connect to %s"
 msgstr ""
 
-#: ./templates/default/account/mastodon.tpl.php:76
+#: ./templates/default/account/mastodon.tpl.php:59
+msgid "Cancel"
+msgstr ""
+
+#: ./templates/default/account/mastodon.tpl.php:79
 msgid "Your account is currently connected to these Mastodon instances. Public updates, pictures, and posts that you publish here can be cross-posted."
 msgstr ""
 
-
-#: ./templates/default/account/mastodon.tpl.php:91
+#: ./templates/default/account/mastodon.tpl.php:93
 msgid "Disconnect %s"
 msgstr ""
 
-#: ./templates/default/account/mastodon.tpl.php:117
+#: ./templates/default/account/mastodon.tpl.php:119
 msgid "Mastodon debug : %s"
 msgstr ""
 
@@ -85,19 +88,19 @@ msgstr ""
 msgid "Authorized <strong>%s</strong> by <strong>%s</strong>."
 msgstr ""
 
-#: ./templates/default/admin/mastodon.tpl.php:43
+#: ./templates/default/admin/mastodon.tpl.php:42
 msgid "ID: %s&hellip;"
 msgstr ""
 
-#: ./templates/default/admin/mastodon.tpl.php:67
+#: ./templates/default/admin/mastodon.tpl.php:66
 msgid "Server : none"
 msgstr ""
 
-#: ./templates/default/admin/mastodon.tpl.php:71
+#: ./templates/default/admin/mastodon.tpl.php:70
 msgid "Authorized <strong>n/a</strong> by <strong>n/a</strong>."
 msgstr ""
 
-#: ./templates/default/admin/mastodon.tpl.php:75
+#: ./templates/default/admin/mastodon.tpl.php:73
 msgid "ID: n/a"
 msgstr ""
 

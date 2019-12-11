@@ -1,0 +1,151 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.4\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language: fr_FR\n"
+
+# ./Pages/Account.php:38
+msgid "%s instance settings have been removed from your account."
+msgstr "Les paramètres d’instance %s ont été supprimés de votre compte."
+
+# ./Pages/Admin.php:44
+msgid "%s instance settings have been removed from your site."
+msgstr "Les paramètres d’instance %s ont été supprimés de votre site."
+
+#: templates/default/account/mastodon.tpl.php:16
+#: templates/default/account/mastodon.tpl.php:101
+msgid "1. Enter your Mastodon instance’s user details:"
+msgstr "1. Entrez les données utilisateur de votre instance Mastodon :"
+
+#: templates/default/account/mastodon.tpl.php:18
+#: templates/default/account/mastodon.tpl.php:103
+msgid "Mastodon login (email address)"
+msgstr "Mastodon login (adresse email)"
+
+#: templates/default/account/mastodon.tpl.php:20
+#: templates/default/account/mastodon.tpl.php:48
+#: templates/default/account/mastodon.tpl.php:105
+msgid "Mastodon full username"
+msgstr "Nom d’utilisateur complet de Mastodon"
+
+#: templates/default/account/mastodon.tpl.php:22
+msgid "Mastodon server name"
+msgstr "Nom de serveur Mastodon"
+
+#: templates/default/account/mastodon.tpl.php:22
+#: templates/default/account/mastodon.tpl.php:50
+#: templates/default/account/mastodon.tpl.php:107
+msgid "Save"
+msgstr "Enregistrer"
+
+#: templates/default/account/mastodon.tpl.php:33
+msgid "2. Authorize with %s"
+msgstr "2. Autoriser avec %s"
+
+#: templates/default/account/mastodon.tpl.php:39
+msgid "When your account is connected to Mastodon. Public updates, pictures, and posts that you publish here can be cross-posted to %s."
+msgstr "Lorsque votre compte est connecté à Mastodon, les mises à jour publiques, les photos et les publications que vous publiez ici peuvent être postées en ligne sur %s."
+
+#: templates/default/account/mastodon.tpl.php:54
+msgid "Connect to %s"
+msgstr "Connectez-vous à %s"
+
+#: templates/default/account/mastodon.tpl.php:76
+msgid "Your account is currently connected to these Mastodon instances. Public updates, pictures, and posts that you publish here can be cross-posted."
+msgstr "Votre compte est actuellement connecté aux instances Mastodon Suivantes. Les mises à jour publiques, les photos et les publications que vous publiez ici peuvent être cross-posted (renvoit multiples)."
+
+#: templates/default/account/mastodon.tpl.php:91
+msgid "Disconnect %s"
+msgstr "Déconnectez-vous de %s"
+
+#: templates/default/account/mastodon.tpl.php:117
+msgid "Mastodon debug : %s"
+msgstr "Mastodon débogue : %s"
+
+#: templates/default/admin/mastodon.tpl.php:4
+msgid "Syndicate to Mastodon"
+msgstr "Publier sur Mastodon"
+
+#: templates/default/admin/mastodon.tpl.php:10
+msgid "Your Mastodon plugin is installed. For configuration check your account settings."
+msgstr "Votre plugin Mastodon est installé. Pour vérifier la configuration, vérifiez les paramètres de votre compte."
+
+#: templates/default/admin/mastodon.tpl.php:19
+msgid "Following Mastodon servers are configured:"
+msgstr "Les serveurs Mastodon suivants sont configurés:"
+
+#: templates/default/admin/mastodon.tpl.php:23
+msgid "Mastodon (admin details): %s"
+msgstr "Mastodon (détails de l’administration): %s"
+
+#: templates/default/admin/mastodon.tpl.php:30
+msgid "Server : %s"
+msgstr "Serveur : %s"
+
+#: templates/default/admin/mastodon.tpl.php:32
+msgid "Delete"
+msgstr "Effacer"
+
+#: templates/default/admin/mastodon.tpl.php:39
+msgid "Authorized <strong>%s</strong> by <strong>%s</strong>."
+msgstr "Autorisé <strong>%s</strong> par <strong>%s</strong>."
+
+#: templates/default/admin/mastodon.tpl.php:43
+msgid "ID: %s&hellip;"
+msgstr "ID: %s&hellip;"
+
+#: templates/default/admin/mastodon.tpl.php:67
+msgid "Server : none"
+msgstr "Serveur : aucun"
+
+#: templates/default/admin/mastodon.tpl.php:71
+msgid "Authorized <strong>n/a</strong> by <strong>n/a</strong>."
+msgstr "Autorisé <strong>n/a</strong> par <strong>n/a</strong>."
+
+#: templates/default/admin/mastodon.tpl.php:75
+msgid "ID: n/a"
+msgstr "ID: n/a"
+
+#: templates/default/forms/usersmastodon.tpl.php:24
+msgid "Search by name, email address, blood group, or username"
+msgstr "Rechercher par nom, adresse email ou nom d’utilisateur"
+
+#: templates/default/forms/usersmastodon.tpl.php:79
+msgid "By creation date"
+msgstr "Par date de création"
+
+#: templates/default/forms/usersmastodon.tpl.php:80
+msgid "By name"
+msgstr "Par nom"
+
+#: templates/default/forms/usersmastodon.tpl.php:89
+msgid "Ascending"
+msgstr "Ascendant"
+
+#: templates/default/forms/usersmastodon.tpl.php:90
+msgid "Descending"
+msgstr "Descendant"
+
+#: templates/default/forms/usersmastodon.tpl.php:102
+msgid "Prev"
+msgstr "Précédent"
+
+#: templates/default/forms/usersmastodon.tpl.php:103
+msgid "Next"
+msgstr "Suivant"
+
+#: templates/default/forms/components/usersmastodon/user.tpl.php:45
+msgid "Last update posted"
+msgstr "Dernière mise à jour postée"
+
+#: templates/default/forms/components/usersmastodon/user.tpl.php:55
+msgid "Never"
+msgstr "Jamais"
